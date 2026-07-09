@@ -1,0 +1,14 @@
+.env*.local
+.next
+node_modules
+*.log
+*.tsbuildinfo
+
+# Local review/debug artifacts
+/desktop-contact.png
+/mobile-home.png
+
+# Source extraction artifacts kept out of the app bundle
+/pptx_extract/
+/Rafik_Al_Haram1.zip
+/public/screenshots/
