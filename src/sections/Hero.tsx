@@ -1,13 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { FaApple, FaGooglePlay } from "react-icons/fa";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiX } from "react-icons/fi";
 import { LocalizedImage } from "@/components/LocalizedImage";
 import { useLanguage } from "@/lib/i18n";
 
 const playStoreUrl = "https://play.google.com/store/apps/details?id=com.missoft.haciadaylari";
-const appStoreUrl = "https://apps.apple.com/tr/app/rafik-al-haram/id6789041688";
 const highlightedDescriptionPhrases = {
   tr: "mobil uygulama",
   en: "mobile application",
@@ -16,6 +16,7 @@ const highlightedDescriptionPhrases = {
 
 export function Hero() {
   const { t, language } = useLanguage();
+  const [isAppStoreOpen, setIsAppStoreOpen] = useState(false);
   const heroImageAspectRatio = language === "en" ? "2932 / 1080" : "2328 / 1006";
   const highlightedPhrase = highlightedDescriptionPhrases[language];
   const highlightedDescription = t.hero.description.includes(highlightedPhrase) ? t.hero.description.split(highlightedPhrase) : null;
@@ -105,19 +106,36 @@ export function Hero() {
                 <FaGooglePlay className="h-4 w-4" aria-hidden="true" />
                 {t.hero.playStore}
               </a>
-              <a
-                href={appStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setIsAppStoreOpen(true)}
                 className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-ink/10 bg-white px-6 py-3 text-sm font-semibold text-ink transition duration-300 hover:-translate-y-0.5 hover:border-brand-orange/50 hover:text-brand-teal"
               >
                 <FaApple className="h-5 w-5" aria-hidden="true" />
                 {t.hero.appStore}
-              </a>
+              </button>
             </div>
           </div>
         </motion.div>
       </div>
+
+      {isAppStoreOpen ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/45 px-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-soft">
+            <button
+              type="button"
+              onClick={() => setIsAppStoreOpen(false)}
+              className="focus-ring ml-auto flex h-9 w-9 items-center justify-center rounded-full border border-ink/10 text-muted transition hover:text-ink"
+              aria-label={t.hero.close}
+            >
+              <FiX className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <FaApple className="mx-auto mt-2 h-10 w-10 text-ink" aria-hidden="true" />
+            <h2 className="mt-4 text-2xl font-medium text-ink">{t.hero.appStoreSoonTitle}</h2>
+            <p className="mt-3 leading-7 text-muted">{t.hero.appStoreSoonDescription}</p>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
