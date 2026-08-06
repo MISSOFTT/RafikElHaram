@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = verifyAdminSession(request.cookies.get("rafik_admin_session")?.value);
     if (!user) {
-      return NextResponse.json({ message: "Oturum bulunamadi. Lutfen tekrar giris yapin." }, { status: 401 });
+      return NextResponse.json({ message: "Oturum bulunamadı. Lütfen tekrar giriş yapın." }, { status: 401 });
     }
 
     const body = await request.json();
@@ -27,6 +27,6 @@ export async function POST(request: NextRequest) {
       headers: { "Content-Type": response.headers.get("content-type") || "application/json" }
     });
   } catch {
-    return NextResponse.json({ message: "Ekran duzenleyici kaydi yapilamadi." }, { status: 502 });
+    return NextResponse.json({ message: "Ekran düzenleyici kaydı yapılamadı." }, { status: 502 });
   }
 }

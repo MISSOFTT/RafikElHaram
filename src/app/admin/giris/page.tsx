@@ -63,8 +63,8 @@ export default function AdminGirisPage() {
               <Image src="/brand/rafik-al-haram-logo.jpeg" alt="" fill sizes="56px" className="object-cover object-top" />
             </span>
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#b67828]">Yonetim</p>
-              <h1 className="text-3xl font-bold text-[#202833]">Admin Girisi</h1>
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#b67828]">Yönetim</p>
+              <h1 className="text-3xl font-bold text-[#202833]">Admin Girişi</h1>
             </div>
           </div>
 
@@ -126,7 +126,7 @@ export default function AdminGirisPage() {
             )}
 
             <label className="mt-4 block text-sm font-semibold text-[#202833]">
-              Sifre
+              Şifre
               <span className="mt-2 flex h-12 items-center gap-3 rounded-md border border-black/10 bg-white px-3">
                 <FiLock className="h-5 w-5 text-[#238071]" aria-hidden="true" />
                 <input
@@ -157,9 +157,9 @@ export default function AdminGirisPage() {
           <div className="grid h-full content-between p-8">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#f0b75f]">Rafik Al Haram</p>
-              <h2 className="mt-4 max-w-md text-4xl font-bold leading-tight">Tek panelden organizasyon kontrolu.</h2>
+              <h2 className="mt-4 max-w-md text-4xl font-bold leading-tight">Tek panelden organizasyon kontrolü.</h2>
               <p className="mt-4 max-w-lg text-sm font-medium leading-6 text-white/72">
-                Mobil uygulamadaki admin icerikleri web tarafinda daha okunur tablolar, hizli moduller ve ekran duzenleyiciyle birlikte kullanima hazir.
+                Mobil uygulamadaki admin içerikleri web tarafında daha okunur tablolar, hızlı modüller ve ekran düzenleyiciyle birlikte kullanıma hazır.
               </p>
               <div className="mt-6 grid grid-cols-3 gap-3">
                 {[
@@ -181,15 +181,15 @@ export default function AdminGirisPage() {
 
             <div className="mt-8 rounded-md border border-white/12 bg-white/[0.04] p-4">
               <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm font-bold text-white">Admin modulleri</p>
-                <span className="rounded-full bg-[#f0b75f]/18 px-3 py-1 text-xs font-bold text-[#f0b75f]">Hazir</span>
+                <p className="text-sm font-bold text-white">Admin modülleri</p>
+                <span className="rounded-full bg-[#f0b75f]/18 px-3 py-1 text-xs font-bold text-[#f0b75f]">Hazır</span>
               </div>
               <div className="grid gap-2">
                 {[
-                  { title: "Personel ve kafile yonetimi", icon: FiUsers },
+                  { title: "Personel ve kafile yönetimi", icon: FiUsers },
                   { title: "Otel, servis ve etkinlik takibi", icon: FiActivity },
-                  { title: "Duyuru, SOS ve konferans akisi", icon: FiCheckCircle },
-                  { title: "Haci / rehber ekran duzenleyici", icon: FiGrid }
+                  { title: "Duyuru, SOS ve konferans akışı", icon: FiCheckCircle },
+                  { title: "Hacı / rehber ekran düzenleyici", icon: FiGrid }
                 ].map((item) => {
                   const Icon = item.icon;
                   return (

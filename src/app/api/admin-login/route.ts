@@ -40,6 +40,6 @@ export async function POST(request: NextRequest) {
 
     return nextResponse;
   } catch {
-    return NextResponse.json({ message: "Sunucuya ulasilamadi. Lutfen daha sonra tekrar deneyin." }, { status: 502 });
+    return NextResponse.json({ message: "Sunucuya ulaşılamadı. Lütfen daha sonra tekrar deneyin." }, { status: 502 });
   }
 }

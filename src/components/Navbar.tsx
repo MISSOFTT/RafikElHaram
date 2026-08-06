@@ -122,8 +122,8 @@ export function Navbar() {
           <Link
             href="/admin/giris"
             className="focus-ring grid h-11 w-11 place-items-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:bg-brand-orange hover:text-white"
-            aria-label="Admin girisi"
-            title="Admin girisi"
+            aria-label="Admin girişi"
+            title="Admin girişi"
           >
             <FiLock aria-hidden="true" />
           </Link>
