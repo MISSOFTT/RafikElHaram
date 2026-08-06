@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
   try {
     const user = verifyAdminSession(request.cookies.get("rafik_admin_session")?.value);
     if (!user) {
-      return NextResponse.json({ message: "Oturum bulunamadi. Lutfen tekrar giris yapin." }, { status: 401 });
+      return NextResponse.json({ message: "Oturum bulunamadı. Lütfen tekrar giriş yapın." }, { status: 401 });
     }
 
     const body = (await request.json()) as { moduleKey?: ModuleKey };
     if (!body.moduleKey || !(body.moduleKey in allowedEndpoints)) {
-      return NextResponse.json({ message: "Gecersiz modul istegi." }, { status: 400 });
+      return NextResponse.json({ message: "Geçersiz modül isteği." }, { status: 400 });
     }
 
     const response = await fetch(`${backendBaseUrl}${allowedEndpoints[body.moduleKey](user)}`, {
@@ -36,6 +36,6 @@ export async function POST(request: NextRequest) {
       headers: { "Content-Type": response.headers.get("content-type") || "application/json" }
     });
   } catch {
-    return NextResponse.json({ message: "Veriler alinamadi. Lutfen daha sonra tekrar deneyin." }, { status: 502 });
+    return NextResponse.json({ message: "Veriler alınamadı. Lütfen daha sonra tekrar deneyin." }, { status: 502 });
   }
 }

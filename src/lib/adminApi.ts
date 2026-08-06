@@ -26,60 +26,60 @@ export const adminModules: AdminModule[] = [
   {
     key: "personel",
     title: "Personel",
-    description: "Ana rehber ve rehber listelerini yonet.",
-    emptyState: "Firma personellerini getirmek icin Yenile dugmesini kullan.",
+    description: "Ana rehber ve rehber listelerini yönet.",
+    emptyState: "Firma personellerini getirmek için Yenile düğmesini kullan.",
     endpoint: (user) => `/Admin/FirmaPersonelleri/${user.firmaId}`
   },
   {
     key: "kafile",
     title: "Kafileler",
-    description: "Firma kafileleri, grup bilgileri ve haci listeleri.",
-    emptyState: "Kafile kayitlarini goruntulemek icin Yenile dugmesini kullan.",
+    description: "Firma kafileleri, grup bilgileri ve hacı listeleri.",
+    emptyState: "Kafile kayıtlarını görüntülemek için Yenile düğmesini kullan.",
     endpoint: (user) => `/Kafile/AnaRehber/GetAllKafile/${user.firmaId}`
   },
   {
     key: "otel",
     title: "Oteller",
     description: "Firma otelleri ve grup otel bilgileri.",
-    emptyState: "Firma otellerini goruntulemek icin Yenile dugmesini kullan.",
+    emptyState: "Firma otellerini görüntülemek için Yenile düğmesini kullan.",
     endpoint: (user) => `/Otel/AnaRehber/GetAllOteller/${user.firmaId}`
   },
   {
     key: "etkinlik",
-    title: "Etkinlik Onaylari",
-    description: "Grup etkinlik onaylarini takip et.",
-    emptyState: "Grup etkinlik onaylarini goruntulemek icin Yenile dugmesini kullan.",
+    title: "Etkinlik Onayları",
+    description: "Grup etkinlik onaylarını takip et.",
+    emptyState: "Grup etkinlik onaylarını görüntülemek için Yenile düğmesini kullan.",
     endpoint: (user) => `/Admin/GrupEtkinlikOnaylari/${user.grupId}`
   },
   {
     key: "analiz",
     title: "Analiz",
-    description: "Genel ozet, sayaclar ve zaman serileri.",
-    emptyState: "Analiz modulu icin tarih filtreleri ve grafikler bir sonraki adimda baglanacak."
+    description: "Genel özet, sayaçlar ve zaman serileri.",
+    emptyState: "Analiz modülü için tarih filtreleri ve grafikler bir sonraki adımda bağlanacak."
   },
   {
     key: "duyuru",
     title: "Duyurular",
-    description: "Ana rehber duyurulari ve goruntuleme bilgileri.",
-    emptyState: "Duyuru ekleme, silme ve goruntuleyenler formlari API kayitlariyla baglanacak."
+    description: "Ana rehber duyuruları ve görüntüleme bilgileri.",
+    emptyState: "Duyuru ekleme, silme ve görüntüleyenler formları API kayıtlarıyla bağlanacak."
   },
   {
     key: "sos",
     title: "SOS",
-    description: "Aktif ve gecmis yardim kayitlari.",
-    emptyState: "SOS harita ve gecmis kayit akisi backend grup secimiyle baglanacak."
+    description: "Aktif ve geçmiş yardım kayıtları.",
+    emptyState: "SOS harita ve geçmiş kayıt akışı backend grup seçimiyle bağlanacak."
   },
   {
     key: "konferans",
     title: "Konferans",
-    description: "Canli konferans kayitlari ve katilimcilar.",
-    emptyState: "Konferans listesi ve katilimci detaylari grup secimiyle baglanacak."
+    description: "Canlı konferans kayıtları ve katılımcılar.",
+    emptyState: "Konferans listesi ve katılımcı detayları grup seçimiyle bağlanacak."
   },
   {
     key: "ekranDuzenleyici",
-    title: "Ekran Duzenleyici",
-    description: "Haci ve rehber tarafinda gorunecek ekranlari sec.",
-    emptyState: "Checkbox listesini acmak icin Yenile dugmesini kullan.",
+    title: "Ekran Düzenleyici",
+    description: "Hacı ve rehber tarafında görünecek ekranları seç.",
+    emptyState: "Checkbox listesini açmak için Yenile düğmesini kullan.",
     endpoint: () => "/MenuDegisiklik/Admin/EkranDuzenleyici"
   }
 ];
@@ -88,16 +88,16 @@ export const defaultScreenEditor = {
   haci: [
     { key: "dua", baslik: "Dua", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
     { key: "fetva", baslik: "Fetva", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
-    { key: "doviz", baslik: "Doviz", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
-    { key: "kible", baslik: "Kible", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
-    { key: "turSayaci", baslik: "Tur Sayaci", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
-    { key: "ibadetVideolari", baslik: "Ibadet Videolari", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
+    { key: "doviz", baslik: "Döviz", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
+    { key: "kible", baslik: "Kıble", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
+    { key: "turSayaci", baslik: "Tur Sayacı", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
+    { key: "ibadetVideolari", baslik: "İbadet Videoları", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
     { key: "namazVakitleri", baslik: "Namaz Vakitleri", kullaniciTarafi: "haci", secili: true, bagliEkranlar: [] },
-    { key: "bulusmaNoktasi", baslik: "Bulusma Noktasi", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:bulusmaNoktasi"] },
+    { key: "bulusmaNoktasi", baslik: "Buluşma Noktası", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:bulusmaNoktasi"] },
     { key: "servis", baslik: "Servis", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:servis"] },
     { key: "otel", baslik: "Otel", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:otel"] },
-    { key: "umreProgrami", baslik: "Umre Programi", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:umreProgrami"] },
-    { key: "ucusBilgi", baslik: "Ucus Bilgi", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:ucusBilgi"] },
+    { key: "umreProgrami", baslik: "Umre Programı", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:umreProgrami"] },
+    { key: "ucusBilgi", baslik: "Uçuş Bilgi", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:ucusBilgi"] },
     { key: "etkinlik", baslik: "Etkinlik", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:etkinlik"] },
     { key: "duyuru", baslik: "Duyuru", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:duyuru"] },
     { key: "konferans", baslik: "Konferans", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:konferans"] },
@@ -105,11 +105,11 @@ export const defaultScreenEditor = {
     { key: "sos", baslik: "SOS", kullaniciTarafi: "haci", secili: true, bagliEkranlar: ["rehber:sos"] }
   ],
   rehber: [
-    { key: "bulusmaNoktasi", baslik: "Bulusma Noktasi", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:bulusmaNoktasi"] },
+    { key: "bulusmaNoktasi", baslik: "Buluşma Noktası", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:bulusmaNoktasi"] },
     { key: "servis", baslik: "Servis", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:servis"] },
     { key: "otel", baslik: "Otel", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:otel"] },
-    { key: "umreProgrami", baslik: "Umre Programi", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:umreProgrami"] },
-    { key: "ucusBilgi", baslik: "Ucus Bilgi", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:ucusBilgi"] },
+    { key: "umreProgrami", baslik: "Umre Programı", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:umreProgrami"] },
+    { key: "ucusBilgi", baslik: "Uçuş Bilgi", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:ucusBilgi"] },
     { key: "etkinlik", baslik: "Etkinlik", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:etkinlik"] },
     { key: "duyuru", baslik: "Duyuru", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:duyuru"] },
     { key: "konferans", baslik: "Konferans", kullaniciTarafi: "rehber", secili: true, bagliEkranlar: ["haci:konferans"] },

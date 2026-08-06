@@ -60,9 +60,9 @@ export default function AdminPage() {
     } catch (err) {
       if (module.key === "ekranDuzenleyici") {
         setScreenEditor(getDefaultScreenEditor());
-        setMessage("Canli API ekran duzenleyici endpointine ulasilamadi; panel varsayilan listeyle acildi.");
+        setMessage("Canlı API ekran düzenleyici endpointine ulaşılamadı; panel varsayılan listeyle açıldı.");
       } else {
-        setMessage(err instanceof Error ? err.message : "Veri alinamadi.");
+        setMessage(err instanceof Error ? err.message : "Veri alınamadı.");
       }
     } finally {
       setLoading(false);
@@ -93,10 +93,10 @@ export default function AdminPage() {
       }
 
       setScreenEditor((await apiResponse.json()) as ScreenEditorResponse);
-      setMessage("Bagli ekranlar otomatik guncellendi.");
+      setMessage("Bağlı ekranlar otomatik güncellendi.");
     } catch {
       setScreenEditor(normalizeScreensLocal(nextData));
-      setMessage("Canli kayit endpointine ulasilamadi; bagli ekranlar web tarafinda otomatik guncellendi.");
+      setMessage("Canlı kayıt endpointine ulaşılamadı; bağlı ekranlar web tarafında otomatik güncellendi.");
     } finally {
       setLoading(false);
     }
@@ -137,7 +137,7 @@ export default function AdminPage() {
             className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-black/10 bg-white px-4 text-sm font-bold text-[#202833] hover:bg-[#202833] hover:text-white"
           >
             <FiLogOut aria-hidden="true" />
-            Cikis
+            Çıkış
           </button>
         </div>
 
@@ -194,7 +194,7 @@ export default function AdminPage() {
             ) : (
               <div className="grid min-h-[340px] place-items-center rounded-md border border-dashed border-black/15 bg-[#fafbf8] p-8 text-center">
                 <div>
-                  <p className="text-base font-bold text-[#202833]">{loading ? "Yukleniyor" : "Modul hazir"}</p>
+                  <p className="text-base font-bold text-[#202833]">{loading ? "Yükleniyor" : "Modül hazır"}</p>
                   <p className="mt-2 max-w-md text-sm font-medium leading-6 text-[#64717f]">{activeModule.emptyState}</p>
                 </div>
               </div>
@@ -285,7 +285,7 @@ function DataPreview({ data }: { data: unknown }) {
         </table>
       </div>
       <div className="border-t border-black/10 bg-white px-3 py-2 text-xs font-semibold text-[#64717f]">
-        {objectRows.length} kayit gosteriliyor. Tablo ilk 50 kaydi ve ilk 8 kolonu listeler.
+        {objectRows.length} kayıt gösteriliyor. Tablo ilk 50 kaydı ve ilk 8 kolonu listeler.
       </div>
     </div>
   );
@@ -311,7 +311,7 @@ function ScreenColumn({ title, items, onToggle }: { title: string; items: Screen
           >
             <span>
               <span className="block text-sm font-bold text-[#202833]">{item.baslik}</span>
-              {item.bagliEkranlar.length ? <span className="text-xs font-medium text-[#64717f]">Bagli: {item.bagliEkranlar.join(", ")}</span> : null}
+              {item.bagliEkranlar.length ? <span className="text-xs font-medium text-[#64717f]">Bağlı: {item.bagliEkranlar.join(", ")}</span> : null}
             </span>
             {item.secili ? <FiCheckSquare className="h-5 w-5 text-[#238071]" aria-hidden="true" /> : <FiSquare className="h-5 w-5 text-[#9aa4ad]" aria-hidden="true" />}
           </button>
