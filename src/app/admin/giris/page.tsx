@@ -29,7 +29,11 @@ export default function AdminGirisPage() {
           "Content-Type": "application/json",
           Accept: "application/json"
         },
-        body: JSON.stringify(loginMode === "telefon" ? { telefon, sifre } : { telefon: eposta, eposta, email: eposta, sifre })
+        body: JSON.stringify(
+          loginMode === "telefon"
+            ? { Telefon: telefon, Sifre: sifre, telefon, sifre }
+            : { Telefon: eposta, Sifre: sifre, telefon: eposta, eposta, email: eposta, sifre }
+        )
       });
 
       if (!response.ok) {
@@ -214,6 +218,7 @@ async function readErrorMessage(response: Response) {
     const data = JSON.parse(text) as { message?: string; error?: string };
     return data.message || data.error || "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.";
   } catch {
+    if (response.status === 400) return "Giriş bilgileri kabul edilmedi. Telefon/e-posta ve şifrenizi kontrol edin.";
     if (text.includes("Kullanıcı bulunamadı")) return "Kullanıcı bulunamadı. Telefon/e-posta ve şifrenizi kontrol edin.";
     if (text.includes("Failed to fetch")) return "Sunucuya ulaşılamadı. Lütfen daha sonra tekrar deneyin.";
     return text;

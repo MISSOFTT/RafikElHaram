@@ -6,13 +6,18 @@ const backendBaseUrl = (process.env.UMRE_API_BASE_URL || "http://37.148.210.227:
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
+    const loginPayload = {
+      Telefon: payload.Telefon || payload.telefon || payload.email || payload.eposta,
+      Sifre: payload.Sifre || payload.sifre
+    };
+
     const response = await fetch(`${backendBaseUrl}/Login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json"
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(loginPayload),
       cache: "no-store"
     });
 
