@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { FiCheckSquare, FiLogOut, FiRefreshCw, FiSettings, FiSquare } from "react-icons/fi";
-import { adminApiBaseUrl, adminModules, apiGet, defaultScreenEditor, type AdminModule, type AdminUser } from "@/lib/adminApi";
+import { adminModules, apiGet, defaultScreenEditor, type AdminModule, type AdminUser } from "@/lib/adminApi";
 
 type ScreenItem = {
   key: string;
@@ -51,7 +51,7 @@ export default function AdminPage() {
 
     setLoading(true);
     try {
-      const data = await apiGet(module.endpoint(user));
+      const data = await apiGet(module.key);
       if (module.key === "ekranDuzenleyici") {
         setScreenEditor(data as ScreenEditorResponse);
       } else {
@@ -75,7 +75,7 @@ export default function AdminPage() {
     setMessage("");
 
     try {
-      const apiResponse = await fetch(`${adminApiBaseUrl}/MenuDegisiklik/Admin/EkranDuzenleyici/Normalize`, {
+      const apiResponse = await fetch("/api/admin-screen-normalize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
