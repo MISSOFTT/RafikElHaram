@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { FiActivity, FiBarChart2, FiCheckCircle, FiGrid, FiLock, FiLogIn, FiMail, FiPhone, FiUsers } from "react-icons/fi";
-import { adminApiBaseUrl, type AdminUser } from "@/lib/adminApi";
+import { type AdminUser } from "@/lib/adminApi";
 
 type LoginMode = "telefon" | "eposta";
 
@@ -23,7 +23,7 @@ export default function AdminGirisPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${adminApiBaseUrl}/Login`, {
+      const response = await fetch("/api/admin-login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,18 +33,18 @@ export default function AdminGirisPage() {
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        throw new Error(await readErrorMessage(response));
       }
 
       const user = (await response.json()) as AdminUser;
       if (!user.firmaId || user.firmaId <= 0) {
-        throw new Error("Bu hesap firma paneline bagli degil.");
+        throw new Error("Bu hesap firma paneline bağlı değil.");
       }
 
       localStorage.setItem("rafikAdminUser", JSON.stringify(user));
       router.push("/admin");
     } catch (err) {
-      setError(err instanceof Error ? err.message.replaceAll('"', "") : "Giris yapilamadi.");
+      setError(err instanceof Error ? err.message.replaceAll('"', "") : "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.");
     } finally {
       setLoading(false);
     }
@@ -144,7 +144,7 @@ export default function AdminGirisPage() {
               className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#202833] px-5 text-sm font-bold text-white transition hover:bg-[#238071] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FiLogIn aria-hidden="true" />
-              {loading ? "Kontrol ediliyor" : "Giris Yap"}
+              {loading ? "Kontrol ediliyor" : "Giriş Yap"}
             </button>
           </form>
         </div>
@@ -204,4 +204,18 @@ export default function AdminGirisPage() {
       </div>
     </section>
   );
+}
+
+async function readErrorMessage(response: Response) {
+  const text = await response.text();
+  if (!text) return "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.";
+
+  try {
+    const data = JSON.parse(text) as { message?: string; error?: string };
+    return data.message || data.error || "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.";
+  } catch {
+    if (text.includes("Kullanıcı bulunamadı")) return "Kullanıcı bulunamadı. Telefon/e-posta ve şifrenizi kontrol edin.";
+    if (text.includes("Failed to fetch")) return "Sunucuya ulaşılamadı. Lütfen daha sonra tekrar deneyin.";
+    return text;
+  }
 }

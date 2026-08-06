@@ -119,8 +119,14 @@ export const defaultScreenEditor = {
 } as const;
 
 export async function apiGet(path: string) {
-  const response = await fetch(`${adminApiBaseUrl}${path}`, {
-    headers: { Accept: "application/json" },
+  const moduleKey = path.split("/").filter(Boolean)[0] || path;
+  const response = await fetch("/api/admin-data", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({ moduleKey }),
     cache: "no-store"
   });
 
