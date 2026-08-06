@@ -32,12 +32,12 @@ export default function AdminGirisPage() {
         body: JSON.stringify(
           loginMode === "telefon"
             ? { Telefon: telefon, Sifre: sifre, telefon, sifre }
-            : { Telefon: eposta, Sifre: sifre, telefon: eposta, eposta, email: eposta, sifre }
+            : { email: eposta, password: sifre, loginMode: "eposta" }
         )
       });
 
       if (!response.ok) {
-        throw new Error(await readErrorMessage(response));
+        throw new Error(await readErrorMessage(response, loginMode));
       }
 
       const user = (await response.json()) as AdminUser;
@@ -210,7 +210,7 @@ export default function AdminGirisPage() {
   );
 }
 
-async function readErrorMessage(response: Response) {
+async function readErrorMessage(response: Response, loginMode: LoginMode) {
   const text = await response.text();
   if (!text) return "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.";
 
@@ -218,6 +218,9 @@ async function readErrorMessage(response: Response) {
     const data = JSON.parse(text) as { message?: string; error?: string };
     return data.message || data.error || "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.";
   } catch {
+    if (loginMode === "eposta" && text.includes("Kullanıcı bulunamadı")) {
+      return "Bu backend e-posta ile girişi desteklemiyor görünüyor. Mobilde çalışan giriş servisini web paneline bağlamamız gerekiyor.";
+    }
     if (response.status === 400) return "Giriş bilgileri kabul edilmedi. Telefon/e-posta ve şifrenizi kontrol edin.";
     if (text.includes("Kullanıcı bulunamadı")) return "Kullanıcı bulunamadı. Telefon/e-posta ve şifrenizi kontrol edin.";
     if (text.includes("Failed to fetch")) return "Sunucuya ulaşılamadı. Lütfen daha sonra tekrar deneyin.";
