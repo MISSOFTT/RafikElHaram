@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FiGlobe, FiMenu, FiX } from "react-icons/fi";
+import { FiGlobe, FiLock, FiMenu, FiX } from "react-icons/fi";
 import { useLanguage, type Language } from "@/lib/i18n";
 
 const sectionRouteMap: Record<string, string> = {
@@ -119,6 +119,14 @@ export function Navbar() {
           >
             {t.nav.demo}
           </Link>
+          <Link
+            href="/admin/giris"
+            className="focus-ring grid h-11 w-11 place-items-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:bg-brand-orange hover:text-white"
+            aria-label="Admin girisi"
+            title="Admin girisi"
+          >
+            <FiLock aria-hidden="true" />
+          </Link>
         </div>
 
         <button
@@ -156,6 +164,10 @@ export function Navbar() {
             </label>
             <Link href="/iletisim" className="rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-white">
               {t.nav.demo}
+            </Link>
+            <Link href="/admin/giris" className="flex items-center gap-2 rounded-xl border border-ink/10 px-4 py-3 text-sm font-semibold text-ink">
+              <FiLock aria-hidden="true" />
+              Admin
             </Link>
           </div>
         </div>
