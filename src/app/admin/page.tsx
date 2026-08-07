@@ -129,7 +129,7 @@ export default function AdminPage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#b67828]">Admin Paneli</p>
             <h1 className="mt-1 text-2xl font-bold text-[#202833]">{displayName}</h1>
-            <p className="mt-1 text-sm font-medium text-[#64717f]">Firma ID: {user.firmaId} · Grup ID: {user.grupId}</p>
+            <p className="mt-1 text-sm font-medium text-[#64717f]">Firma: {user.firmaAdi || user.firmaId} � Grup: {user.grupAdi || user.grupId}</p>
           </div>
           <button
             type="button"
@@ -248,7 +248,8 @@ function normalizeScreensLocal(data: ScreenEditorResponse) {
 function DataPreview({ data }: { data: unknown }) {
   const rows = Array.isArray(data) ? data : [data];
   const objectRows = rows.filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === "object" && !Array.isArray(row));
-  const columns = Array.from(new Set(objectRows.flatMap((row) => Object.keys(row)))).slice(0, 8);
+  const relationMaps = buildRelationMaps(objectRows);
+  const columns = getDisplayColumns(objectRows).slice(0, 12);
 
   if (!objectRows.length || !columns.length) {
     return (
@@ -266,7 +267,7 @@ function DataPreview({ data }: { data: unknown }) {
             <tr>
               {columns.map((column) => (
                 <th key={column} className="whitespace-nowrap px-3 py-3">
-                  {column}
+                  {formatColumnTitle(column)}
                 </th>
               ))}
             </tr>
@@ -276,7 +277,7 @@ function DataPreview({ data }: { data: unknown }) {
               <tr key={index} className="hover:bg-[#fafbf8]">
                 {columns.map((column) => (
                   <td key={column} className="max-w-[240px] truncate px-3 py-3 font-medium text-[#202833]">
-                    {formatCell(row[column])}
+                    {formatCell(row[column], column, row, relationMaps)}
                   </td>
                 ))}
               </tr>
@@ -291,10 +292,227 @@ function DataPreview({ data }: { data: unknown }) {
   );
 }
 
-function formatCell(value: unknown) {
+const technicalColumns = new Set(["id", "createdAt", "updatedAt", "deletedAt", "password", "sifre", "token", "refreshToken"]);
+
+const preferredColumnOrder = [
+  "adSoyad",
+  "ad",
+  "adi",
+  "isim",
+  "baslik",
+  "title",
+  "firma",
+  "firmaAdi",
+  "firmaAd",
+  "grup",
+  "grupAdi",
+  "kafile",
+  "kafileAdi",
+  "otel",
+  "otelAdi",
+  "personel",
+  "personelAdi",
+  "rehber",
+  "anaRehber",
+  "telefon",
+  "email",
+  "eposta",
+  "durum",
+  "kullaniciTipi",
+  "tarih",
+  "baslangicTarihi",
+  "bitisTarihi",
+  "aciklama"
+];
+
+const columnTitles: Record<string, string> = {
+  ad: "Ad",
+  adi: "Ad",
+  soyad: "Soyad",
+  adSoyad: "Ad Soyad",
+  isim: "İsim",
+  baslik: "Başlık",
+  title: "Başlık",
+  firma: "Firma",
+  firmaId: "Firma",
+  firmaID: "Firma",
+  firmaAdi: "Firma",
+  firmaAd: "Firma",
+  grup: "Grup",
+  grupId: "Grup",
+  grupID: "Grup",
+  grupAdi: "Grup",
+  kafile: "Kafile",
+  kafileId: "Kafile",
+  kafileID: "Kafile",
+  kafileAdi: "Kafile",
+  otel: "Otel",
+  otelId: "Otel",
+  otelID: "Otel",
+  otelAdi: "Otel",
+  personel: "Personel",
+  personelId: "Personel",
+  personelID: "Personel",
+  personelAdi: "Personel",
+  rehber: "Rehber",
+  rehberId: "Rehber",
+  anaRehber: "Ana Rehber",
+  anaRehberId: "Ana Rehber",
+  telefon: "Telefon",
+  email: "E-posta",
+  eposta: "E-posta",
+  kullaniciTipi: "Kullanıcı Tipi",
+  durum: "Durum",
+  aktif: "Aktif",
+  onay: "Onay",
+  onayli: "Onaylı",
+  tarih: "Tarih",
+  baslangicTarihi: "Başlangıç",
+  bitisTarihi: "Bitiş",
+  aciklama: "Açıklama",
+  odaNo: "Oda No",
+  katNo: "Kat",
+  plaka: "Plaka"
+};
+
+const enumLabels: Record<string, Record<number, string>> = {
+  kullaniciTipi: {
+    1: "Hacı adayı",
+    2: "Rehber",
+    3: "Ana rehber",
+    99: "Admin"
+  },
+  durum: {
+    0: "Pasif",
+    1: "Aktif",
+    2: "Beklemede",
+    3: "İptal"
+  }
+};
+
+function getDisplayColumns(rows: Record<string, unknown>[]) {
+  const allColumns = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
+  const hiddenIdColumns = new Set<string>();
+
+  for (const column of allColumns) {
+    if (!isIdColumn(column)) continue;
+    const readableColumn = findReadableColumn(allColumns, getIdBase(column));
+    if (readableColumn) hiddenIdColumns.add(column);
+  }
+
+  return allColumns
+    .filter((column) => !technicalColumns.has(column) && !hiddenIdColumns.has(column))
+    .sort((a, b) => columnScore(a) - columnScore(b));
+}
+
+function columnScore(column: string) {
+  const directIndex = preferredColumnOrder.indexOf(column);
+  if (directIndex >= 0) return directIndex;
+  if (isIdColumn(column)) return 90;
+  if (column.toLowerCase().includes("tarih")) return 70;
+  return 50;
+}
+
+function formatColumnTitle(column: string) {
+  if (columnTitles[column]) return columnTitles[column];
+  const withoutId = isIdColumn(column) ? getIdBase(column) : column;
+  const words = withoutId.replace(/([a-zçğıöşü])([A-ZÇĞİÖŞÜ])/g, "$1 $2").replace(/[_-]+/g, " ").trim();
+  return words ? words.charAt(0).toLocaleUpperCase("tr-TR") + words.slice(1) : column;
+}
+
+function formatCell(value: unknown, column = "", row?: Record<string, unknown>, relationMaps?: RelationMaps) {
   if (value === null || value === undefined) return "";
-  if (typeof value === "object") return JSON.stringify(value);
+  if (typeof value === "boolean") return value ? "Evet" : "Hayır";
+  if (typeof value === "number") {
+    const enumValue = enumLabels[column]?.[value];
+    if (enumValue) return enumValue;
+    if (isIdColumn(column)) return resolveRelationName(column, value, row, relationMaps) ?? String(value);
+  }
+  if (typeof value === "string" && looksLikeDate(value)) return formatDate(value);
+  if (typeof value === "object") return getReadableObjectName(value) || JSON.stringify(value);
   return String(value);
+}
+
+type RelationMaps = Record<string, Map<number, string>>;
+
+function buildRelationMaps(rows: Record<string, unknown>[]): RelationMaps {
+  const maps: RelationMaps = {};
+
+  for (const row of rows) {
+    for (const [column, value] of Object.entries(row)) {
+      if (!isIdColumn(column) || typeof value !== "number") continue;
+      const base = getIdBase(column);
+      const readable = findReadableValue(row, base);
+      if (!readable) continue;
+      maps[base] ??= new Map<number, string>();
+      maps[base].set(value, readable);
+    }
+  }
+
+  return maps;
+}
+
+function resolveRelationName(column: string, value: number, row?: Record<string, unknown>, relationMaps?: RelationMaps) {
+  const base = getIdBase(column);
+  return (row && findReadableValue(row, base)) || relationMaps?.[base]?.get(value);
+}
+
+function findReadableValue(row: Record<string, unknown>, base: string) {
+  const readableColumn = findReadableColumn(Object.keys(row), base);
+  const readableValue = readableColumn ? row[readableColumn] : undefined;
+  if (typeof readableValue === "string" && readableValue.trim()) return readableValue.trim();
+  if (readableValue && typeof readableValue === "object") return getReadableObjectName(readableValue);
+  return undefined;
+}
+
+function findReadableColumn(columns: string[], base: string) {
+  const candidates = [base, `${base}Adi`, `${base}Ad`, `${base}Ismi`, `${base}Isim`, `${base}Name`, `${base}Title`];
+  return candidates.find((candidate) => columns.includes(candidate));
+}
+
+function getReadableObjectName(value: object) {
+  const data = value as Record<string, unknown>;
+  const firstName = getString(data.ad) || getString(data.firstName);
+  const lastName = getString(data.soyad) || getString(data.lastName);
+  const fullName = `${firstName} ${lastName}`.trim();
+  return (
+    fullName ||
+    getString(data.adSoyad) ||
+    getString(data.adi) ||
+    getString(data.isim) ||
+    getString(data.name) ||
+    getString(data.title) ||
+    getString(data.baslik) ||
+    getString(data.firmaAdi) ||
+    getString(data.grupAdi) ||
+    getString(data.kafileAdi) ||
+    getString(data.otelAdi)
+  );
+}
+
+function getString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : "";
+}
+
+function isIdColumn(column: string) {
+  return /(?:^id$|Id$|ID$|_id$)/.test(column);
+}
+
+function getIdBase(column: string) {
+  return column.replace(/(?:Id|ID|_id)$/, "");
+}
+
+function looksLikeDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}/.test(value);
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("tr-TR", {
+    dateStyle: "medium",
+    timeStyle: value.includes("T") ? "short" : undefined
+  }).format(date);
 }
 
 function ScreenColumn({ title, items, onToggle }: { title: string; items: ScreenItem[]; onToggle: (key: string) => void }) {
@@ -320,3 +538,4 @@ function ScreenColumn({ title, items, onToggle }: { title: string; items: Screen
     </div>
   );
 }
+

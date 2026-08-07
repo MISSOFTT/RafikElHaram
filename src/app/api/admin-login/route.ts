@@ -87,6 +87,8 @@ async function loginWithAccountEmail(payload: Record<string, unknown>) {
     kullaniciTipi: Number(profile.roleCode ?? profile.kullaniciTipi ?? 99),
     grupId: Number(profile.groupId ?? profile.grupId ?? 0),
     firmaId: Number(profile.organizationId ?? profile.firmaId ?? 0),
+    firmaAdi: String(profile.organizationName ?? profile.firmaAdi ?? profile.firmaAd ?? ""),
+    grupAdi: String(profile.groupName ?? profile.grupAdi ?? profile.grupAd ?? ""),
     firmaGirisiVar: Number(profile.organizationId ?? profile.firmaId ?? 0) > 0,
     gorulecekSayfalar: [],
     gizlenecekSayfalar: [],
