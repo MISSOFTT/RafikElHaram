@@ -9,6 +9,8 @@ export type AdminUser = {
   kullaniciTipi: number;
   grupId: number;
   firmaId: number;
+  firmaAdi?: string;
+  grupAdi?: string;
   firmaGirisiVar?: boolean;
   gorulecekSayfalar?: string[];
   gizlenecekSayfalar?: string[];
