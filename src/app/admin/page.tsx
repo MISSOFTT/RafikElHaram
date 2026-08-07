@@ -60,9 +60,9 @@ export default function AdminPage() {
     } catch (err) {
       if (module.key === "ekranDuzenleyici") {
         setScreenEditor(getDefaultScreenEditor());
-        setMessage("CanlÄ± API ekran dÃ¼zenleyici endpointine ulaÅŸÄ±lamadÄ±; panel varsayÄ±lan listeyle aÃ§Ä±ldÄ±.");
+        setMessage("Canlı API ekran düzenleyici endpointine ulaşılamadı; panel varsayılan listeyle açıldı.");
       } else {
-        setMessage(err instanceof Error ? err.message : "Veri alÄ±namadÄ±.");
+        setMessage(err instanceof Error ? err.message : "Veri alınamadı.");
       }
     } finally {
       setLoading(false);
@@ -93,10 +93,10 @@ export default function AdminPage() {
       }
 
       setScreenEditor((await apiResponse.json()) as ScreenEditorResponse);
-      setMessage("BaÄŸlÄ± ekranlar otomatik gÃ¼ncellendi.");
+      setMessage("Bağlı ekranlar otomatik güncellendi.");
     } catch {
       setScreenEditor(normalizeScreensLocal(nextData));
-      setMessage("CanlÄ± kayÄ±t endpointine ulaÅŸÄ±lamadÄ±; baÄŸlÄ± ekranlar web tarafÄ±nda otomatik gÃ¼ncellendi.");
+      setMessage("Canlı kayıt endpointine ulaşılamadı; bağlı ekranlar web tarafında otomatik güncellendi.");
     } finally {
       setLoading(false);
     }
@@ -137,7 +137,7 @@ export default function AdminPage() {
             className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-black/10 bg-white px-4 text-sm font-bold text-[#202833] hover:bg-[#202833] hover:text-white"
           >
             <FiLogOut aria-hidden="true" />
-            Ã‡Ä±kÄ±ÅŸ
+            Çıkış
           </button>
         </div>
 
@@ -194,7 +194,7 @@ export default function AdminPage() {
             ) : (
               <div className="grid min-h-[340px] place-items-center rounded-md border border-dashed border-black/15 bg-[#fafbf8] p-8 text-center">
                 <div>
-                  <p className="text-base font-bold text-[#202833]">{loading ? "YÃ¼kleniyor" : "ModÃ¼l hazÄ±r"}</p>
+                  <p className="text-base font-bold text-[#202833]">{loading ? "Yükleniyor" : "Modül hazır"}</p>
                   <p className="mt-2 max-w-md text-sm font-medium leading-6 text-[#64717f]">{activeModule.emptyState}</p>
                 </div>
               </div>
@@ -286,7 +286,7 @@ function DataPreview({ data }: { data: unknown }) {
         </table>
       </div>
       <div className="border-t border-black/10 bg-white px-3 py-2 text-xs font-semibold text-[#64717f]">
-        {objectRows.length} kayÄ±t gÃ¶steriliyor. Tablo ilk 50 kaydÄ± ve ilk 8 kolonu listeler.
+        {objectRows.length} kayıt gösteriliyor. Tablo ilk 50 kaydı ve ilk 12 anlamlı kolonu listeler.
       </div>
     </div>
   );
@@ -330,9 +330,9 @@ const columnTitles: Record<string, string> = {
   adi: "Ad",
   soyad: "Soyad",
   adSoyad: "Ad Soyad",
-  isim: "Ä°sim",
-  baslik: "BaÅŸlÄ±k",
-  title: "BaÅŸlÄ±k",
+  isim: "İsim",
+  baslik: "Başlık",
+  title: "Başlık",
   firma: "Firma",
   firmaId: "Firma",
   firmaID: "Firma",
@@ -361,15 +361,15 @@ const columnTitles: Record<string, string> = {
   telefon: "Telefon",
   email: "E-posta",
   eposta: "E-posta",
-  kullaniciTipi: "KullanÄ±cÄ± Tipi",
+  kullaniciTipi: "Kullanıcı Tipi",
   durum: "Durum",
   aktif: "Aktif",
   onay: "Onay",
-  onayli: "OnaylÄ±",
+  onayli: "Onaylı",
   tarih: "Tarih",
-  baslangicTarihi: "BaÅŸlangÄ±Ã§",
-  bitisTarihi: "BitiÅŸ",
-  aciklama: "AÃ§Ä±klama",
+  baslangicTarihi: "Başlangıç",
+  bitisTarihi: "Bitiş",
+  aciklama: "Açıklama",
   odaNo: "Oda No",
   katNo: "Kat",
   plaka: "Plaka"
@@ -377,7 +377,7 @@ const columnTitles: Record<string, string> = {
 
 const enumLabels: Record<string, Record<number, string>> = {
   kullaniciTipi: {
-    1: "HacÄ± adayÄ±",
+    1: "Hacı adayı",
     2: "Rehber",
     3: "Ana rehber",
     99: "Admin"
@@ -386,7 +386,7 @@ const enumLabels: Record<string, Record<number, string>> = {
     0: "Pasif",
     1: "Aktif",
     2: "Beklemede",
-    3: "Ä°ptal"
+    3: "İptal"
   }
 };
 
@@ -416,13 +416,13 @@ function columnScore(column: string) {
 function formatColumnTitle(column: string) {
   if (columnTitles[column]) return columnTitles[column];
   const withoutId = isIdColumn(column) ? getIdBase(column) : column;
-  const words = withoutId.replace(/([a-zÃ§ÄŸÄ±Ã¶ÅŸÃ¼])([A-ZÃ‡ÄÄ°Ã–ÅÃœ])/g, "$1 $2").replace(/[_-]+/g, " ").trim();
+  const words = withoutId.replace(/([a-zçğıöşü])([A-ZÇĞİÖŞÜ])/g, "$1 $2").replace(/[_-]+/g, " ").trim();
   return words ? words.charAt(0).toLocaleUpperCase("tr-TR") + words.slice(1) : column;
 }
 
 function formatCell(value: unknown, column = "", row?: Record<string, unknown>, relationMaps?: RelationMaps) {
   if (value === null || value === undefined) return "";
-  if (typeof value === "boolean") return value ? "Evet" : "HayÄ±r";
+  if (typeof value === "boolean") return value ? "Evet" : "Hayır";
   if (typeof value === "number") {
     const enumValue = enumLabels[column]?.[value];
     if (enumValue) return enumValue;
@@ -529,7 +529,7 @@ function ScreenColumn({ title, items, onToggle }: { title: string; items: Screen
           >
             <span>
               <span className="block text-sm font-bold text-[#202833]">{item.baslik}</span>
-              {item.bagliEkranlar.length ? <span className="text-xs font-medium text-[#64717f]">BaÄŸlÄ±: {item.bagliEkranlar.join(", ")}</span> : null}
+              {item.bagliEkranlar.length ? <span className="text-xs font-medium text-[#64717f]">Bağlı: {item.bagliEkranlar.join(", ")}</span> : null}
             </span>
             {item.secili ? <FiCheckSquare className="h-5 w-5 text-[#238071]" aria-hidden="true" /> : <FiSquare className="h-5 w-5 text-[#9aa4ad]" aria-hidden="true" />}
           </button>

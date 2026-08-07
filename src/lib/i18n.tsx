@@ -23,7 +23,11 @@ export const translations = {
       gallery: "Galeri",
       contact: "İletişim",
       demo: "Demo Talep Et",
-      language: "Dil seçimi"
+      language: "Dil seçimi",
+      navigation: "Ana navigasyon",
+      adminLogin: "Admin girişi",
+      menuOpen: "Menüyü aç",
+      menuClose: "Menüyü kapat"
     },
     common: {
       brandSubtitle: "Hac ve Umre Dijital Rehberi",
@@ -188,7 +192,8 @@ export const translations = {
         org: "Kurum",
         contactInfo: "İletişim Bilgileri",
         message: "Mesajınız",
-        send: "Mesaj Gönder"
+        send: "Mesaj Gönder",
+        sending: "Gönderiliyor..."
       },
       placeholders: {
         name: "Adınız Soyadınız",
@@ -196,7 +201,9 @@ export const translations = {
         email: "ornek@kurum.com",
         phone: "+90",
         message: "Organizasyonunuz, kafile büyüklüğü ve ihtiyaçlarınızı paylaşın."
-      }
+      },
+      success: "Demo talebiniz başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.",
+      error: "Demo talebi gönderilirken bir hata oluştu. Lütfen tekrar deneyin."
     },
     footer: {
       subtitle: "Hacı adayları için dijital rehber ve yönetim sistemi.",
@@ -208,7 +215,20 @@ export const translations = {
     }
   },
   en: {
-    nav: { home: "Home", about: "About", features: "Features", plans: "Packages", gallery: "Gallery", contact: "Contact", demo: "Request Demo", language: "Language" },
+    nav: {
+      home: "Home",
+      about: "About",
+      features: "Features",
+      plans: "Packages",
+      gallery: "Gallery",
+      contact: "Contact",
+      demo: "Request Demo",
+      language: "Language",
+      navigation: "Main navigation",
+      adminLogin: "Admin login",
+      menuOpen: "Open menu",
+      menuClose: "Close menu"
+    },
     common: { brandSubtitle: "Digital Guide for Hajj and Umrah", tryNow: "Try Now", viewPackages: "View Packages" },
     hero: {
       eyebrow: "The digital guide for Hajj and Umrah journeys",
@@ -356,8 +376,10 @@ export const translations = {
       eyebrow: "Contact",
       title: "Let's discuss digitizing your group operation.",
       description: "Together, we can evaluate how Rafik Al Haram fits your Hajj and Umrah organization.",
-      labels: { email: "Email", phone: "Phone", istanbul: "Istanbul Office", erzurum: "Erzurum Office", name: "Full Name", org: "Organization", contactInfo: "Contact Details", message: "Message", send: "Send Message" },
-      placeholders: { name: "Your full name", org: "Company or organization", email: "name@company.com", phone: "+90", message: "Share your organization, group size, and needs." }
+      labels: { email: "Email", phone: "Phone", istanbul: "Istanbul Office", erzurum: "Erzurum Office", name: "Full Name", org: "Organization", contactInfo: "Contact Details", message: "Message", send: "Send Message", sending: "Sending..." },
+      placeholders: { name: "Your full name", org: "Company or organization", email: "name@company.com", phone: "+90", message: "Share your organization, group size, and needs." },
+      success: "Your demo request was sent successfully. We will contact you as soon as possible.",
+      error: "An error occurred while sending the demo request. Please try again."
     },
     footer: {
       subtitle: "Digital guide and management system for pilgrims.",
@@ -369,7 +391,20 @@ export const translations = {
     }
   },
   ar: {
-    nav: { home: "الرئيسية", about: "من نحن", features: "المزايا", plans: "الباقات", gallery: "المعرض", contact: "تواصل", demo: "اطلب عرضا", language: "اختيار اللغة" },
+    nav: {
+      home: "الرئيسية",
+      about: "من نحن",
+      features: "المزايا",
+      plans: "الباقات",
+      gallery: "المعرض",
+      contact: "تواصل",
+      demo: "اطلب عرضا",
+      language: "اختيار اللغة",
+      navigation: "التنقل الرئيسي",
+      adminLogin: "تسجيل دخول المدير",
+      menuOpen: "فتح القائمة",
+      menuClose: "إغلاق القائمة"
+    },
     common: { brandSubtitle: "الدليل الرقمي للحج والعمرة", tryNow: "جرّب الآن", viewPackages: "عرض الباقات" },
     hero: {
       eyebrow: "الدليل الرقمي لرحلات الحج والعمرة",
@@ -517,8 +552,10 @@ export const translations = {
       eyebrow: "تواصل",
       title: "لنتحدث عن رقمنة إدارة مجموعتك.",
       description: "نقيّم معا كيف يناسب رفيق الحرم تنظيم الحج والعمرة لديك.",
-      labels: { email: "البريد الإلكتروني", phone: "الهاتف", istanbul: "مكتب إسطنبول", erzurum: "مكتب أرضروم", name: "الاسم الكامل", org: "المؤسسة", contactInfo: "بيانات التواصل", message: "رسالتك", send: "إرسال الرسالة" },
-      placeholders: { name: "اسمك الكامل", org: "الشركة أو المؤسسة", email: "name@company.com", phone: "+90", message: "شاركنا نوع التنظيم وحجم المجموعة والاحتياجات." }
+      labels: { email: "البريد الإلكتروني", phone: "الهاتف", istanbul: "مكتب إسطنبول", erzurum: "مكتب أرضروم", name: "الاسم الكامل", org: "المؤسسة", contactInfo: "بيانات التواصل", message: "رسالتك", send: "إرسال الرسالة", sending: "جار الإرسال..." },
+      placeholders: { name: "اسمك الكامل", org: "الشركة أو المؤسسة", email: "name@company.com", phone: "+90", message: "شاركنا نوع التنظيم وحجم المجموعة والاحتياجات." },
+      success: "تم إرسال طلب العرض بنجاح. سنتواصل معك في أقرب وقت ممكن.",
+      error: "حدث خطأ أثناء إرسال طلب العرض. يرجى المحاولة مرة أخرى."
     },
     footer: {
       subtitle: "دليل رقمي ونظام إدارة للحجاج.",
