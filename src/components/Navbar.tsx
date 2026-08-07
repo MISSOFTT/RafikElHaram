@@ -63,7 +63,7 @@ export function Navbar() {
         scrolled ? "border-b border-black/5 bg-white/88 shadow-sm backdrop-blur-xl" : "bg-white/72 backdrop-blur-md"
       }`}
     >
-      <nav className="section-shell flex h-20 items-center justify-between" aria-label="Ana navigasyon">
+      <nav className="section-shell flex h-20 items-center justify-between" aria-label={t.nav.navigation}>
         <Link href="/" className="focus-ring flex items-center gap-3 rounded-full" aria-label="Rafik Al Haram">
           <span className="relative h-12 w-12 overflow-hidden rounded-full border border-brand-orange/20 bg-white shadow-sm">
             <Image
@@ -122,8 +122,8 @@ export function Navbar() {
           <Link
             href="/admin/giris"
             className="focus-ring grid h-11 w-11 place-items-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:bg-brand-orange hover:text-white"
-            aria-label="Admin girişi"
-            title="Admin girişi"
+            aria-label={t.nav.adminLogin}
+            title={t.nav.adminLogin}
           >
             <FiLock aria-hidden="true" />
           </Link>
@@ -133,7 +133,7 @@ export function Navbar() {
           type="button"
           className="focus-ring grid h-11 w-11 place-items-center rounded-full border border-ink/10 bg-white text-ink lg:hidden"
           onClick={() => setOpen((value) => !value)}
-          aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
+          aria-label={open ? t.nav.menuClose : t.nav.menuOpen}
           aria-expanded={open}
         >
           {open ? <FiX aria-hidden="true" /> : <FiMenu aria-hidden="true" />}

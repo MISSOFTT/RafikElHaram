@@ -127,12 +127,12 @@ export function Contact() {
             </div>
             {status === "success" ? (
               <p className="mt-4 rounded-2xl bg-brand-teal/10 px-4 py-3 text-sm font-semibold text-brand-teal">
-                Demo talebiniz başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.
+                {t.contact.success}
               </p>
             ) : null}
             {status === "error" ? (
               <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                Demo talebi gönderilirken bir hata oluştu. Lütfen tekrar deneyin.
+                {t.contact.error}
               </p>
             ) : null}
             <button
@@ -141,7 +141,7 @@ export function Contact() {
               className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-orange/25 transition hover:-translate-y-0.5 hover:bg-[#c78328] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
             >
               <FiSend aria-hidden="true" />
-              {isSubmitting ? "Gönderiliyor..." : t.contact.labels.send}
+              {isSubmitting ? t.contact.labels.sending : t.contact.labels.send}
             </button>
           </form>
         </Reveal>
