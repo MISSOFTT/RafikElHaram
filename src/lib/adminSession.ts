@@ -5,6 +5,10 @@ export type AdminSessionUser = {
   id?: number;
   firmaId?: number;
   grupId?: number;
+  kullaniciTipi?: number;
+  accessToken?: string;
+  token?: string;
+  refreshToken?: string;
 };
 
 const runtimeSecret = randomBytes(32).toString("base64url");
