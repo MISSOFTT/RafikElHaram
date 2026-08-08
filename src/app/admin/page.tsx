@@ -683,7 +683,7 @@ function DataPreview({
                 </td>
                 {columns.map((column) => (
                   <td key={column} className="max-w-[240px] truncate px-3 py-3 font-medium text-[#202833]">
-                    {formatCell(row[column], column, row, relationMaps)}
+                    {formatCell(row[column], column, row, relationMaps, module.key)}
                   </td>
                 ))}
               </tr>
@@ -786,6 +786,41 @@ const columnTitles: Record<string, string> = {
   "Süre Saniye": "Süre (sn)",
   sure: "Süre",
   Sure: "Süre",
+  yemekSaati1: "Yemek Saati 1",
+  YemekSaati1: "Yemek Saati 1",
+  "Yemek Saati1": "Yemek Saati 1",
+  yemekSaati2: "Yemek Saati 2",
+  YemekSaati2: "Yemek Saati 2",
+  "Yemek Saati2": "Yemek Saati 2",
+  yemekSaati3: "Yemek Saati 3",
+  YemekSaati3: "Yemek Saati 3",
+  "Yemek Saati3": "Yemek Saati 3",
+  turBaslangicTarihi: "Tur Başlangıç Tarihi",
+  TurBaslangicTarihi: "Tur Başlangıç Tarihi",
+  "Tur Baslangic Tarihi": "Tur Başlangıç Tarihi",
+  turBitisTarihi: "Tur Bitiş Tarihi",
+  TurBitisTarihi: "Tur Bitiş Tarihi",
+  "Tur Bitis Tarihi": "Tur Bitiş Tarihi",
+  turAraligiBaslangic: "Tur Aralığı Başlangıç",
+  TurAraligiBaslangic: "Tur Aralığı Başlangıç",
+  "Tur Araligi Baslangic": "Tur Aralığı Başlangıç",
+  turAraligiBitis: "Tur Aralığı Bitiş",
+  TurAraligiBitis: "Tur Aralığı Bitiş",
+  "Tur Araligi Bitis": "Tur Aralığı Bitiş",
+  kafileSayisi: "Kafile Sayısı",
+  KafileSayisi: "Kafile Sayısı",
+  "Kafile Sayisi": "Kafile Sayısı",
+  servisSayisi: "Servis Sayısı",
+  ServisSayisi: "Servis Sayısı",
+  "Servis Sayisi": "Servis Sayısı",
+  bulusmaNoktasiSayisi: "Buluşma Noktası Sayısı",
+  BulusmaNoktasiSayisi: "Buluşma Noktası Sayısı",
+  "Bulusma Noktasi Sayisi": "Buluşma Noktası Sayısı",
+  etkinlikSayisi: "Etkinlik Sayısı",
+  EtkinlikSayisi: "Etkinlik Sayısı",
+  "Etkinlik Sayisi": "Etkinlik Sayısı",
+  rehberAdSoyad: "Rehber Ad Soyad",
+  RehberAdSoyad: "Rehber Ad Soyad",
   mudurAd: "Müdür Adı",
   mudurAdi: "Müdür Adı",
   soyad: "Soyad",
@@ -1031,7 +1066,7 @@ function translateColumnWord(word: string) {
   return words[normalized] || word;
 }
 
-function formatCell(value: unknown, column = "", row?: Record<string, unknown>, relationMaps?: RelationMaps) {
+function formatCell(value: unknown, column = "", row?: Record<string, unknown>, relationMaps?: RelationMaps, moduleKey = "") {
   if (value === null || value === undefined) return "";
   if (column === "fotograf" && typeof value === "string") return <ImagePreview src={value} />;
   if (isLocationColumn(column)) return <LocationLink value={value} row={row} />;
@@ -1042,7 +1077,7 @@ function formatCell(value: unknown, column = "", row?: Record<string, unknown>, 
     if (isIdColumn(column)) return resolveRelationName(column, value, row, relationMaps) ?? String(value);
   }
   if (typeof value === "string" && enumLabels[column]?.[Number(value)]) return enumLabels[column][Number(value)];
-  if (typeof value === "string" && looksLikeDate(value)) return formatDate(value);
+  if (typeof value === "string" && looksLikeDate(value)) return formatDate(value, shouldShowDateOnly(moduleKey, column));
   if (typeof value === "object") return getReadableObjectName(value) || JSON.stringify(value);
   return String(value);
 }
@@ -1207,12 +1242,18 @@ function looksLikeDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}/.test(value);
 }
 
-function formatDate(value: string) {
+function shouldShowDateOnly(moduleKey: string, column: string) {
+  if (moduleKey !== "kafile") return false;
+  const normalized = column.toLocaleLowerCase("tr-TR");
+  return normalized.includes("tarih");
+}
+
+function formatDate(value: string, dateOnly = false) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
-    timeStyle: value.includes("T") ? "short" : undefined
+    timeStyle: !dateOnly && value.includes("T") ? "short" : undefined
   }).format(date);
 }
 
