@@ -121,11 +121,9 @@ export function Navbar() {
           </Link>
           <Link
             href="/admin/giris"
-            className="focus-ring grid h-11 w-11 place-items-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:bg-brand-orange hover:text-white"
-            aria-label={t.nav.adminLogin}
-            title={t.nav.adminLogin}
+            className="focus-ring rounded-full border border-ink/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink shadow-sm transition hover:bg-brand-orange hover:text-white"
           >
-            <FiLock aria-hidden="true" />
+            Admin Paneli
           </Link>
         </div>
 
