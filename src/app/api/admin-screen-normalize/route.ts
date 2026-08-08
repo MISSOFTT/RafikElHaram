@@ -38,13 +38,14 @@ const linkedScreens: Record<string, string[]> = {
 };
 
 export async function POST(request: NextRequest) {
+  let body: ScreenNormalizeRequest = {};
   try {
     const user = verifyAdminSession(request.cookies.get("rafik_admin_session")?.value);
     if (!user) {
       return NextResponse.json({ message: "Oturum bulunamadı. Lütfen tekrar giriş yapın." }, { status: 401 });
     }
 
-    const body = (await request.json()) as ScreenNormalizeRequest;
+    body = (await request.json()) as ScreenNormalizeRequest;
     const token = user.accessToken || user.token;
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${backendBaseUrl}/MenuDegisiklik/Admin/EkranDuzenleyici/Normalize`, {
+    const response = await fetch(`${backendBaseUrl}/MenuDegisiklik/Admin/EkranDuzenleyici/Kaydet`, {
       method: "POST",
       headers,
       body: JSON.stringify({ ...body, firmaId: Number(user.firmaId || body.firmaId || 0) }),
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
       headers: { "Content-Type": response.headers.get("content-type") || "application/json" }
     });
   } catch {
-    return NextResponse.json({ haci: [], rehber: [] }, { headers: { "x-admin-screen-normalize-fallback": "true" } });
+    return NextResponse.json(normalizeLocally(body), { headers: { "x-admin-screen-normalize-fallback": "true" } });
   }
 }
 
