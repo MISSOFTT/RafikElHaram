@@ -11,12 +11,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const token = user.accessToken || user.token;
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${backendBaseUrl}/MenuDegisiklik/Admin/EkranDuzenleyici/Normalize`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
+      headers,
       body: JSON.stringify({ ...body, firmaId: Number(user.firmaId || 0) }),
       cache: "no-store"
     });

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { FiCheckSquare, FiLogOut, FiPlus, FiRefreshCw, FiSettings, FiSquare } from "react-icons/fi";
+import { FiCheckSquare, FiLogOut, FiPlus, FiRefreshCw, FiSettings, FiSquare, FiX } from "react-icons/fi";
 import { adminModules, apiGet, defaultScreenEditor, type AdminModule, type AdminUser } from "@/lib/adminApi";
 
 type ScreenItem = {
@@ -25,6 +25,8 @@ export default function AdminPage() {
   const [preview, setPreview] = useState<unknown>(null);
   const [screenEditor, setScreenEditor] = useState<ScreenEditorResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createModule, setCreateModule] = useState<AdminModule | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function AdminPage() {
     try {
       const data = await apiGet(module.key);
       if (module.key === "ekranDuzenleyici") {
-        setScreenEditor(data as ScreenEditorResponse);
+        setScreenEditor(normalizeScreenEditorResponse(data));
       } else {
         setPreview(data);
       }
@@ -69,7 +71,8 @@ export default function AdminPage() {
   }
 
   async function normalizeScreens(nextData: ScreenEditorResponse) {
-    setScreenEditor(nextData);
+    const normalizedNextData = normalizeScreensLocal(nextData);
+    setScreenEditor(normalizedNextData);
     setLoading(true);
     setMessage("");
 
@@ -82,8 +85,8 @@ export default function AdminPage() {
         },
         body: JSON.stringify({
           firmaId: user?.firmaId ?? 0,
-          haci: nextData.haci.map(({ key, secili }) => ({ key, secili })),
-          rehber: nextData.rehber.map(({ key, secili }) => ({ key, secili }))
+          haci: normalizedNextData.haci.map(({ key, secili }) => ({ key, secili })),
+          rehber: normalizedNextData.rehber.map(({ key, secili }) => ({ key, secili }))
         })
       });
 
@@ -91,11 +94,11 @@ export default function AdminPage() {
         throw new Error(await apiResponse.text());
       }
 
-      setScreenEditor((await apiResponse.json()) as ScreenEditorResponse);
-      setMessage("Bağlı ekranlar otomatik güncellendi.");
+      setScreenEditor(normalizeScreenEditorResponse(await apiResponse.json()));
+      setMessage("Bağlı ekranlar birlikte güncellendi.");
     } catch {
-      setScreenEditor(normalizeScreensLocal(nextData));
-      setMessage("Bağlı ekranlar web tarafında otomatik güncellendi. Backend kayıt endpointi yanıt vermedi.");
+      setScreenEditor(normalizedNextData);
+      setMessage("Bağlı ekranlar birlikte güncellendi. Backend kayıt endpointi yanıt vermedi.");
     } finally {
       setLoading(false);
     }
@@ -115,6 +118,34 @@ export default function AdminPage() {
   function logout() {
     localStorage.removeItem("rafikAdminUser");
     router.replace("/admin/giris");
+  }
+
+  async function createRecord(formData: FormData) {
+    if (!createModule) return;
+
+    formData.set("moduleKey", createModule.key);
+    setCreating(true);
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin-create", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const savedModule = createModule;
+      setCreateModule(null);
+      await loadModule(savedModule);
+      setMessage(`${savedModule.title} kaydı oluşturuldu.`);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Kayıt oluşturulamadı.");
+    } finally {
+      setCreating(false);
+    }
   }
 
   if (!user) {
@@ -174,7 +205,7 @@ export default function AdminPage() {
                   {activeModule.canCreate ? (
                     <button
                       type="button"
-                      onClick={() => setMessage(`${activeModule.title} için yeni kayıt formu hazırlandı; kayıt endpointi netleşince aktif gönderim bağlanacak.`)}
+                      onClick={() => setCreateModule(activeModule)}
                       className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#238071]/30 bg-white px-4 text-sm font-bold text-[#238071] hover:bg-[#eef8f5]"
                     >
                       <FiPlus aria-hidden="true" />
@@ -213,7 +244,199 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+      {createModule ? <CreateModal module={createModule} creating={creating} onClose={() => setCreateModule(null)} onSubmit={createRecord} /> : null}
     </section>
+  );
+}
+
+function CreateModal({
+  module,
+  creating,
+  onClose,
+  onSubmit
+}: {
+  module: AdminModule;
+  creating: boolean;
+  onClose: () => void;
+  onSubmit: (formData: FormData) => void | Promise<void>;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 px-4 py-8">
+      <form
+        className="max-h-[88vh] w-full max-w-3xl overflow-auto rounded-lg bg-white p-5 shadow-xl"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void onSubmit(new FormData(event.currentTarget));
+        }}
+      >
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-[#202833]">{module.title} Ekle</h2>
+            <p className="mt-1 text-sm font-medium text-[#64717f]">Alanlar mobil uygulamadaki backend kayıt yapısıyla uyumludur.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-black/10 text-[#202833] hover:bg-[#f6f7f3]"
+            aria-label="Kapat"
+          >
+            <FiX aria-hidden="true" />
+          </button>
+        </div>
+
+        {module.key === "personel" ? <PersonelForm /> : null}
+        {module.key === "kafile" ? <KafileForm /> : null}
+        {module.key === "otel" ? <OtelForm /> : null}
+        {module.key === "duyuru" ? <DuyuruForm /> : null}
+        {module.key === "konferans" ? <KonferansForm /> : null}
+
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 items-center justify-center rounded-md border border-black/10 bg-white px-4 text-sm font-bold text-[#202833] hover:bg-[#f6f7f3]"
+          >
+            Vazgeç
+          </button>
+          <button
+            type="submit"
+            disabled={creating}
+            className="inline-flex h-11 items-center justify-center rounded-md bg-[#238071] px-4 text-sm font-bold text-white hover:bg-[#202833] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {creating ? "Kaydediliyor" : "Kaydet"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function PersonelForm() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <FormField name="Ad" label="Ad" required />
+      <FormField name="Soyad" label="Soyad" required />
+      <FormField name="Telefon" label="Telefon" type="tel" required />
+      <FormField name="Sifre" label="Şifre" type="password" required />
+      <FormSelect
+        name="Tur"
+        label="Personel Türü"
+        required
+        options={[
+          { value: "1", label: "Kafile Başkanı" },
+          { value: "2", label: "Ana Rehber" },
+          { value: "3", label: "Rehber" },
+          { value: "4", label: "Personel" }
+        ]}
+      />
+      <FormField name="Oda" label="Oda" />
+      <FormField name="Kat" label="Kat" />
+      <FormField name="Latitude" label="Enlem" type="number" step="any" />
+      <FormField name="Longitude" label="Boylam" type="number" step="any" />
+      <FormField name="ResimDosya" label="Resim" type="file" />
+      <FormField name="ProfilPhoto" label="Profil Fotoğrafı" type="file" />
+    </div>
+  );
+}
+
+function KafileForm() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <FormField name="PersonelId" label="Sorumlu Personel ID" type="number" required />
+      <FormField name="OtelId" label="Otel ID" type="number" required />
+      <FormField name="Nereden" label="Nereden" />
+      <FormField name="Nereye" label="Nereye" />
+      <FormField name="TurBaslangicTarihi" label="Tur Başlangıç Tarihi" type="date" />
+      <FormField name="TurBitisTarihi" label="Tur Bitiş Tarihi" type="date" />
+      <FormField name="YemekSaati1" label="Kahvaltı Saati" type="time" />
+      <FormField name="YemekSaati2" label="Öğle Yemeği Saati" type="time" />
+      <FormField name="YemekSaati3" label="Akşam Yemeği Saati" type="time" />
+      <FormField name="Bilgi" label="Bilgi" textarea className="md:col-span-2" />
+    </div>
+  );
+}
+
+function OtelForm() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <FormField name="Ad" label="Otel Adı" required />
+      <FormField name="MudurAd" label="Müdür Adı" />
+      <FormField name="Telefon" label="Telefon" type="tel" />
+      <FormField name="ResepsiyonTel" label="Resepsiyon Telefonu" type="tel" />
+      <FormField name="Konum" label="Konum" required className="md:col-span-2" />
+      <FormField name="ResimDosya" label="Resim" type="file" className="md:col-span-2" />
+    </div>
+  );
+}
+
+function DuyuruForm() {
+  return <FormField name="Metin" label="Duyuru Metni" required textarea />;
+}
+
+function KonferansForm() {
+  return <FormField name="Baslik" label="Konferans Başlığı" required />;
+}
+
+function FormField({
+  name,
+  label,
+  type = "text",
+  required = false,
+  textarea = false,
+  step,
+  className = ""
+}: {
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  textarea?: boolean;
+  step?: string;
+  className?: string;
+}) {
+  const fieldClass =
+    "mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm font-medium text-[#202833] outline-none focus:border-[#238071] focus:ring-2 focus:ring-[#238071]/15";
+
+  return (
+    <label className={`block text-sm font-bold text-[#202833] ${className}`}>
+      {label}
+      {required ? <span className="text-[#b67828]"> *</span> : null}
+      {textarea ? (
+        <textarea name={name} required={required} rows={4} className={fieldClass} />
+      ) : (
+        <input name={name} type={type} required={required} step={step} className={fieldClass} />
+      )}
+    </label>
+  );
+}
+
+function FormSelect({
+  name,
+  label,
+  required = false,
+  options
+}: {
+  name: string;
+  label: string;
+  required?: boolean;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <label className="block text-sm font-bold text-[#202833]">
+      {label}
+      {required ? <span className="text-[#b67828]"> *</span> : null}
+      <select
+        name={name}
+        required={required}
+        className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm font-medium text-[#202833] outline-none focus:border-[#238071] focus:ring-2 focus:ring-[#238071]/15"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -221,6 +444,34 @@ function getDefaultScreenEditor(): ScreenEditorResponse {
   return {
     haci: defaultScreenEditor.haci.map((item) => ({ ...item, bagliEkranlar: [...item.bagliEkranlar] })) as ScreenItem[],
     rehber: defaultScreenEditor.rehber.map((item) => ({ ...item, bagliEkranlar: [...item.bagliEkranlar] })) as ScreenItem[]
+  };
+}
+
+function normalizeScreenEditorResponse(data: unknown): ScreenEditorResponse {
+  const record = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+  const haci = Array.isArray(record.haci) ? record.haci : Array.isArray(record.Haci) ? record.Haci : [];
+  const rehber = Array.isArray(record.rehber) ? record.rehber : Array.isArray(record.Rehber) ? record.Rehber : [];
+
+  return {
+    haci: haci.map(normalizeScreenItem),
+    rehber: rehber.map(normalizeScreenItem)
+  };
+}
+
+function normalizeScreenItem(item: unknown): ScreenItem {
+  const record = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+  const key = String(record.key ?? record.Key ?? "");
+
+  return {
+    key,
+    baslik: String(record.baslik ?? record.Baslik ?? formatColumnTitle(key)),
+    kullaniciTarafi: (record.kullaniciTarafi ?? record.KullaniciTarafi) === "rehber" ? "rehber" : "haci",
+    secili: typeof (record.secili ?? record.Secili) === "boolean" ? Boolean(record.secili ?? record.Secili) : true,
+    bagliEkranlar: Array.isArray(record.bagliEkranlar)
+      ? record.bagliEkranlar.map(String)
+      : Array.isArray(record.BagliEkranlar)
+        ? record.BagliEkranlar.map(String)
+        : []
   };
 }
 
