@@ -8,7 +8,8 @@ const createEndpoints = {
   kafile: "/Kafile/AnaRehber/Grup/Kaydet",
   otel: "/Otel/AnaRehber/InsertUpdateOtel",
   duyuru: "/Duyuru/AnaRehber/Ekle",
-  konferans: "/Konferans/Baslat"
+  konferans: "/Konferans/Baslat",
+  anket: "/Anket/AnketEkle"
 } as const;
 
 type CreateModuleKey = keyof typeof createEndpoints;
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response =
-      moduleKey === "duyuru" || moduleKey === "konferans"
+      moduleKey === "duyuru" || moduleKey === "konferans" || moduleKey === "anket"
         ? await postJson(moduleKey, user, requestForm)
         : await postForm(moduleKey, user, requestForm);
 
@@ -46,13 +47,19 @@ function authHeaders(user: AdminSessionUser): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function postJson(moduleKey: "duyuru" | "konferans", user: AdminSessionUser, requestForm: FormData) {
+async function postJson(moduleKey: "duyuru" | "konferans" | "anket", user: AdminSessionUser, requestForm: FormData) {
   const body =
     moduleKey === "duyuru"
       ? {
           AnaRehberId: Number(user.id || 0),
           Metin: getRequiredString(requestForm, "Metin")
         }
+      : moduleKey === "anket"
+        ? {
+            Baslik: getRequiredString(requestForm, "Baslik"),
+            Aciklama: getFormValue(requestForm, "Aciklama") || null,
+            GrupId: Number(getFormValue(requestForm, "GrupId") || user.grupId || 0) || null
+          }
       : {
           Baslik: getRequiredString(requestForm, "Baslik"),
           PersonelId: Number(user.id || 0)

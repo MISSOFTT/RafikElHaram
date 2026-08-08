@@ -198,7 +198,6 @@ export default function AdminPage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#b67828]">Admin Paneli</p>
             <h1 className="mt-1 text-2xl font-bold text-[#202833]">{displayName}</h1>
-            <p className="mt-1 text-sm font-medium text-[#64717f]">Firma: {user.firmaAdi || user.firmaId} · Grup: {user.grupAdi || user.grupId}</p>
           </div>
           <button
             type="button"
@@ -353,6 +352,7 @@ function CreateModal({
         {module.key === "otel" ? <OtelForm /> : null}
         {module.key === "duyuru" ? <DuyuruForm /> : null}
         {module.key === "konferans" ? <KonferansForm /> : null}
+        {module.key === "anket" ? <AnketForm /> : null}
 
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
@@ -437,6 +437,16 @@ function DuyuruForm() {
 
 function KonferansForm() {
   return <FormField name="Baslik" label="Konferans Başlığı" required />;
+}
+
+function AnketForm() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <FormField name="Baslik" label="Anket Başlığı" required className="md:col-span-2" />
+      <FormField name="Aciklama" label="Açıklama" textarea className="md:col-span-2" />
+      <FormField name="GrupId" label="Grup ID" type="number" />
+    </div>
+  );
 }
 
 function FormField({
@@ -583,9 +593,11 @@ function DataPreview({
   const rows = Array.isArray(data) ? data : [data];
   const objectRows = rows
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === "object" && !Array.isArray(row))
-    .map(normalizeTableRow);
+    .map(normalizeTableRow)
+    .filter((row) => shouldShowRow(row, module.key));
   const relationMaps = buildRelationMaps(objectRows);
-  const columns = getDisplayColumns(objectRows, module.key).slice(0, 9);
+  const maxColumns = module.key === "analiz" ? 6 : 9;
+  const columns = getDisplayColumns(objectRows, module.key).slice(0, maxColumns);
 
   if (!objectRows.length || !columns.length) {
     return (
@@ -847,6 +859,24 @@ function normalizeTableRow(row: Record<string, unknown>) {
   return next;
 }
 
+function shouldShowRow(row: Record<string, unknown>, moduleKey: string) {
+  if (moduleKey !== "konferans") return true;
+  const durationSeconds = getConferenceDurationSeconds(row);
+  return durationSeconds === null || durationSeconds >= 120;
+}
+
+function getConferenceDurationSeconds(row: Record<string, unknown>) {
+  const directDuration = getNumericField(row, ["sure", "Sure", "sureSaniye", "SureSaniye", "duration", "Duration", "durationSeconds", "DurationSeconds"]);
+  if (directDuration !== null) return directDuration > 1000 ? Math.round(directDuration / 1000) : directDuration;
+
+  const start = getDateField(row, ["baslangicTarihi", "BaslangicTarihi", "startDate", "StartDate", "baslamaZamani", "BaslamaZamani"]);
+  const end = getDateField(row, ["bitisTarihi", "BitisTarihi", "endDate", "EndDate", "bitisZamani", "BitisZamani"]);
+  if (!start || !end) return null;
+
+  const seconds = Math.round((end.getTime() - start.getTime()) / 1000);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+}
+
 function getDisplayColumns(rows: Record<string, unknown>[], moduleKey = "") {
   const allColumns = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
   const hiddenIdColumns = new Set<string>();
@@ -869,6 +899,7 @@ function shouldHideColumn(column: string, moduleKey: string) {
   if (normalized.includes("updated") || normalized.includes("update")) return true;
   if (normalized.includes("tarih") && !["turBaslangicTarihi", "turBitisTarihi", "tarih"].includes(column)) return true;
   if (moduleKey === "personel" && ["bagliAnaRehberAd", "bagliAnaRehberSoyad"].includes(column)) return true;
+  if (moduleKey === "analiz" && /(id$|ID$|oran|yuzde|percentage|count|adet|toplam|sayisi|sayısı)/.test(column)) return true;
   return false;
 }
 
@@ -929,6 +960,7 @@ function formatCell(value: unknown, column = "", row?: Record<string, unknown>, 
     if (enumValue) return enumValue;
     if (isIdColumn(column)) return resolveRelationName(column, value, row, relationMaps) ?? String(value);
   }
+  if (typeof value === "string" && enumLabels[column]?.[Number(value)]) return enumLabels[column][Number(value)];
   if (typeof value === "string" && looksLikeDate(value)) return formatDate(value);
   if (typeof value === "object") return getReadableObjectName(value) || JSON.stringify(value);
   return String(value);
@@ -1056,6 +1088,18 @@ function getNumericField(row: Record<string, unknown> | undefined, keys: string[
     const value = row[key];
     if (typeof value === "number" && Number.isFinite(value)) return value;
     if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Number(value);
+  }
+  return null;
+}
+
+function getDateField(row: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = row[key];
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    if (typeof value === "string" && value.trim()) {
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) return date;
+    }
   }
   return null;
 }

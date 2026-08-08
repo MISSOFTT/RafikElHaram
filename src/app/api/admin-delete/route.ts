@@ -12,6 +12,7 @@ type DeleteTarget = {
 const deleteEndpoints = {
   personel: (id: number): DeleteTarget => ({ method: "DELETE", path: `/Personel/AnaRehber/PersonelSil/${id}` }),
   kafile: (id: number): DeleteTarget => ({ method: "DELETE", path: `/Kafile/AnaRehber/KafileSil/${id}` }),
+  anket: (id: number): DeleteTarget => ({ method: "DELETE", path: `/Anket/AnketSil/${id}` }),
   duyuru: (id: number, user: AdminSessionUser) => ({
     method: "POST",
     path: "/Duyuru/AnaRehber/Sil",

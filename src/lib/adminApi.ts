@@ -55,11 +55,13 @@ export const adminModules: AdminModule[] = [
     createEndpoint: "POST /api/Otel/AnaRehber/InsertUpdateOtel"
   },
   {
-    key: "etkinlik",
-    title: "Etkinlik Onayları",
-    description: "Grup etkinlik onaylarını takip et.",
-    emptyState: "Grup etkinlik onaylarını görüntülemek için Yenile düğmesini kullan.",
-    endpoint: (user) => `/Admin/GrupEtkinlikOnaylari/${user.grupId}`
+    key: "anket",
+    title: "Anketler",
+    description: "Mobil uygulamadaki anket yönetimi kayıtları.",
+    emptyState: "Anketleri görüntülemek için Yenile düğmesini kullan.",
+    endpoint: () => "/Anket/TumAnketler",
+    canCreate: true,
+    createEndpoint: "POST /api/Anket/AnketEkle"
   },
   {
     key: "analiz",

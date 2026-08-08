@@ -7,7 +7,7 @@ const allowedEndpoints = {
   personel: (user: AdminSessionUser) => `/Admin/FirmaPersonelleri/${Number(user.firmaId || 0)}`,
   kafile: (user: AdminSessionUser) => `/Kafile/AnaRehber/GetAllKafile/${Number(user.firmaId || 0)}`,
   otel: (user: AdminSessionUser) => `/Otel/AnaRehber/GetAllOteller/${Number(user.firmaId || 0)}`,
-  etkinlik: (user: AdminSessionUser) => `/Admin/GrupEtkinlikOnaylari/${Number(user.grupId || 0)}`,
+  anket: () => "/Anket/TumAnketler",
   analiz: (user: AdminSessionUser) => {
     const params = new URLSearchParams({
       kullaniciId: String(Number(user.id || 0)),
