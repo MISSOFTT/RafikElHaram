@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { FiCheckSquare, FiLogOut, FiRefreshCw, FiSettings, FiSquare } from "react-icons/fi";
+import { FiCheckSquare, FiLogOut, FiPlus, FiRefreshCw, FiSettings, FiSquare } from "react-icons/fi";
 import { adminModules, apiGet, defaultScreenEditor, type AdminModule, type AdminUser } from "@/lib/adminApi";
 
 type ScreenItem = {
@@ -60,7 +60,6 @@ export default function AdminPage() {
     } catch (err) {
       if (module.key === "ekranDuzenleyici") {
         setScreenEditor(getDefaultScreenEditor());
-        setMessage("Canlı API ekran düzenleyici endpointine ulaşılamadı; panel varsayılan listeyle açıldı.");
       } else {
         setMessage(err instanceof Error ? err.message : "Veri alınamadı.");
       }
@@ -96,7 +95,7 @@ export default function AdminPage() {
       setMessage("Bağlı ekranlar otomatik güncellendi.");
     } catch {
       setScreenEditor(normalizeScreensLocal(nextData));
-      setMessage("Canlı kayıt endpointine ulaşılamadı; bağlı ekranlar web tarafında otomatik güncellendi.");
+      setMessage("Bağlı ekranlar web tarafında otomatik güncellendi. Backend kayıt endpointi yanıt vermedi.");
     } finally {
       setLoading(false);
     }
@@ -171,6 +170,17 @@ export default function AdminPage() {
                 <p className="mt-1 text-sm font-medium text-[#64717f]">{activeModule.description}</p>
               </div>
               {activeModule.endpoint ? (
+                <div className="flex flex-wrap gap-2">
+                  {activeModule.canCreate ? (
+                    <button
+                      type="button"
+                      onClick={() => setMessage(`${activeModule.title} için yeni kayıt formu hazırlandı; kayıt endpointi netleşince aktif gönderim bağlanacak.`)}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#238071]/30 bg-white px-4 text-sm font-bold text-[#238071] hover:bg-[#eef8f5]"
+                    >
+                      <FiPlus aria-hidden="true" />
+                      Yeni Ekle
+                    </button>
+                  ) : null}
                 <button
                   type="button"
                   onClick={() => void loadModule(activeModule)}
@@ -179,6 +189,7 @@ export default function AdminPage() {
                   <FiRefreshCw aria-hidden="true" />
                   Yenile
                 </button>
+                </div>
               ) : null}
             </div>
 
@@ -186,8 +197,8 @@ export default function AdminPage() {
 
             {activeModule.key === "ekranDuzenleyici" && screenEditor ? (
               <div className="grid gap-5 xl:grid-cols-2">
-                <ScreenColumn title="Haci Tarafi" items={screenEditor.haci} onToggle={(key) => toggleScreen("haci", key)} />
-                <ScreenColumn title="Rehber Tarafi" items={screenEditor.rehber} onToggle={(key) => toggleScreen("rehber", key)} />
+                <ScreenColumn title="Hacı Tarafı" items={screenEditor.haci} onToggle={(key) => toggleScreen("haci", key)} />
+                <ScreenColumn title="Rehber Tarafı" items={screenEditor.rehber} onToggle={(key) => toggleScreen("rehber", key)} />
               </div>
             ) : preview ? (
               <DataPreview data={preview} />
@@ -263,7 +274,7 @@ function DataPreview({ data }: { data: unknown }) {
     <div className="overflow-hidden rounded-md border border-black/10">
       <div className="overflow-auto">
         <table className="min-w-full divide-y divide-black/10 text-left text-sm">
-          <thead className="bg-[#f6f7f3] text-xs font-bold uppercase text-[#64717f]">
+          <thead className="bg-[#f6f7f3] text-xs font-bold normal-case text-[#64717f]">
             <tr>
               {columns.map((column) => (
                 <th key={column} className="whitespace-nowrap px-3 py-3">
@@ -328,6 +339,8 @@ const preferredColumnOrder = [
 const columnTitles: Record<string, string> = {
   ad: "Ad",
   adi: "Ad",
+  mudurAd: "Müdür Adı",
+  mudurAdi: "Müdür Adı",
   soyad: "Soyad",
   adSoyad: "Ad Soyad",
   isim: "İsim",
@@ -359,6 +372,9 @@ const columnTitles: Record<string, string> = {
   anaRehber: "Ana Rehber",
   anaRehberId: "Ana Rehber",
   telefon: "Telefon",
+  tel: "Telefon",
+  resepsiyonTel: "Resepsiyon Telefonu",
+  resepsiyonTelefon: "Resepsiyon Telefonu",
   email: "E-posta",
   eposta: "E-posta",
   kullaniciTipi: "Kullanıcı Tipi",
@@ -367,12 +383,37 @@ const columnTitles: Record<string, string> = {
   onay: "Onay",
   onayli: "Onaylı",
   tarih: "Tarih",
+  createDate: "Oluşturma Tarihi",
+  createdDate: "Oluşturma Tarihi",
+  updateDate: "Güncelleme Tarihi",
+  updatedDate: "Güncelleme Tarihi",
+  createUser: "Oluşturan",
+  createdUser: "Oluşturan",
+  updateUser: "Güncelleyen",
+  updatedUser: "Güncelleyen",
   baslangicTarihi: "Başlangıç",
   bitisTarihi: "Bitiş",
   aciklama: "Açıklama",
   odaNo: "Oda No",
   katNo: "Kat",
-  plaka: "Plaka"
+  plaka: "Plaka",
+  konum: "Konum",
+  resim: "Resim",
+  resimUrl: "Resim",
+  imageUrl: "Resim",
+  adres: "Adres",
+  ulke: "Ülke",
+  sehir: "Şehir",
+  il: "İl",
+  ilce: "İlçe",
+  doviz: "Döviz",
+  kible: "Kıble",
+  turSayaci: "Tur Sayacı",
+  ibadetVideolari: "İbadet Videoları",
+  namazVakitleri: "Namaz Vakitleri",
+  bulusmaNoktasi: "Buluşma Noktası",
+  umreProgrami: "Umre Programı",
+  ucusBilgi: "Uçuş Bilgi"
 };
 
 const enumLabels: Record<string, Record<number, string>> = {
@@ -416,8 +457,40 @@ function columnScore(column: string) {
 function formatColumnTitle(column: string) {
   if (columnTitles[column]) return columnTitles[column];
   const withoutId = isIdColumn(column) ? getIdBase(column) : column;
-  const words = withoutId.replace(/([a-zçğıöşü])([A-ZÇĞİÖŞÜ])/g, "$1 $2").replace(/[_-]+/g, " ").trim();
+  const words = withoutId
+    .replace(/([a-zçğıöşü])([A-ZÇĞİÖŞÜ])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .split(" ")
+    .map((word) => translateColumnWord(word))
+    .join(" ")
+    .trim();
   return words ? words.charAt(0).toLocaleUpperCase("tr-TR") + words.slice(1) : column;
+}
+
+function translateColumnWord(word: string) {
+  const normalized = word.toLocaleLowerCase("tr-TR");
+  const words: Record<string, string> = {
+    create: "Oluşturma",
+    created: "Oluşturma",
+    update: "Güncelleme",
+    updated: "Güncelleme",
+    user: "Kullanıcı",
+    date: "Tarihi",
+    name: "Ad",
+    title: "Başlık",
+    phone: "Telefon",
+    image: "Resim",
+    location: "Konum",
+    status: "Durum",
+    description: "Açıklama",
+    manager: "Müdür",
+    hotel: "Otel",
+    room: "Oda",
+    group: "Grup",
+    company: "Firma"
+  };
+
+  return words[normalized] || word;
 }
 
 function formatCell(value: unknown, column = "", row?: Record<string, unknown>, relationMaps?: RelationMaps) {
@@ -529,7 +602,7 @@ function ScreenColumn({ title, items, onToggle }: { title: string; items: Screen
           >
             <span>
               <span className="block text-sm font-bold text-[#202833]">{item.baslik}</span>
-              {item.bagliEkranlar.length ? <span className="text-xs font-medium text-[#64717f]">Bağlı: {item.bagliEkranlar.join(", ")}</span> : null}
+              {item.bagliEkranlar.length ? <span className="text-xs font-medium text-[#64717f]">Bağlı: {formatLinkedScreens(item.bagliEkranlar)}</span> : null}
             </span>
             {item.secili ? <FiCheckSquare className="h-5 w-5 text-[#238071]" aria-hidden="true" /> : <FiSquare className="h-5 w-5 text-[#9aa4ad]" aria-hidden="true" />}
           </button>
@@ -537,5 +610,15 @@ function ScreenColumn({ title, items, onToggle }: { title: string; items: Screen
       </div>
     </div>
   );
+}
+
+function formatLinkedScreens(items: string[]) {
+  return items
+    .map((item) => {
+      const [side, key] = item.split(":");
+      const sideLabel = side === "haci" ? "Hacı" : side === "rehber" ? "Rehber" : side;
+      return `${sideLabel}: ${formatColumnTitle(key)}`;
+    })
+    .join(", ");
 }
 
