@@ -82,8 +82,11 @@ async function enrichKafileWithHotelNames(text: string, user: AdminSessionUser) 
     for (const row of rows) {
       const hotelId = getNumber(row.otelId ?? row.OtelId ?? row.otelID ?? row.OtelID);
       if (hotelId !== null && hotelNames.has(hotelId)) {
-        row.otelAdi = hotelNames.get(hotelId);
-        row.OtelAdi = hotelNames.get(hotelId);
+        const hotelName = hotelNames.get(hotelId);
+        row.otel = hotelName;
+        row.Otel = hotelName;
+        row.otelAdi = hotelName;
+        row.OtelAdi = hotelName;
       }
     }
 
