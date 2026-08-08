@@ -22,6 +22,7 @@ export type AdminModule = {
   description: string;
   emptyState: string;
   endpoint?: (user: AdminUser) => string;
+  canCreate?: boolean;
 };
 
 export const adminModules: AdminModule[] = [
@@ -30,52 +31,63 @@ export const adminModules: AdminModule[] = [
     title: "Personel",
     description: "Ana rehber ve rehber listelerini yönet.",
     emptyState: "Firma personellerini getirmek için Yenile düğmesini kullan.",
-    endpoint: (user) => `/Admin/FirmaPersonelleri/${user.firmaId}`
+    endpoint: (user) => `/Admin/FirmaPersonelleri/${user.firmaId}`,
+    canCreate: true
   },
   {
     key: "kafile",
     title: "Kafileler",
     description: "Firma kafileleri, grup bilgileri ve hacı listeleri.",
     emptyState: "Kafile kayıtlarını görüntülemek için Yenile düğmesini kullan.",
-    endpoint: (user) => `/Kafile/AnaRehber/GetAllKafile/${user.firmaId}`
+    endpoint: (user) => `/Kafile/AnaRehber/GetAllKafile/${user.firmaId}`,
+    canCreate: true
   },
   {
     key: "otel",
     title: "Oteller",
     description: "Firma otelleri ve grup otel bilgileri.",
     emptyState: "Firma otellerini görüntülemek için Yenile düğmesini kullan.",
-    endpoint: (user) => `/Otel/AnaRehber/GetAllOteller/${user.firmaId}`
+    endpoint: (user) => `/Otel/AnaRehber/GetAllOteller/${user.firmaId}`,
+    canCreate: true
   },
   {
     key: "etkinlik",
     title: "Etkinlik Onayları",
     description: "Grup etkinlik onaylarını takip et.",
     emptyState: "Grup etkinlik onaylarını görüntülemek için Yenile düğmesini kullan.",
-    endpoint: (user) => `/Admin/GrupEtkinlikOnaylari/${user.grupId}`
+    endpoint: (user) => `/Admin/GrupEtkinlikOnaylari/${user.grupId}`,
+    canCreate: true
   },
   {
     key: "analiz",
     title: "Analiz",
     description: "Genel özet, sayaçlar ve zaman serileri.",
-    emptyState: "Analiz modülü için tarih filtreleri ve grafikler bir sonraki adımda bağlanacak."
+    emptyState: "Analiz verilerini görüntülemek için Yenile düğmesini kullan.",
+    endpoint: (user) => `/Admin/Analiz/${user.firmaId}`
   },
   {
     key: "duyuru",
     title: "Duyurular",
     description: "Ana rehber duyuruları ve görüntüleme bilgileri.",
-    emptyState: "Duyuru ekleme, silme ve görüntüleyenler formları API kayıtlarıyla bağlanacak."
+    emptyState: "Duyuruları görüntülemek için Yenile düğmesini kullan.",
+    endpoint: (user) => `/Duyuru/AnaRehber/GetAllDuyurular/${user.firmaId}`,
+    canCreate: true
   },
   {
     key: "sos",
     title: "SOS",
     description: "Aktif ve geçmiş yardım kayıtları.",
-    emptyState: "SOS harita ve geçmiş kayıt akışı backend grup seçimiyle bağlanacak."
+    emptyState: "SOS kayıtlarını görüntülemek için Yenile düğmesini kullan.",
+    endpoint: (user) => `/SOS/AnaRehber/GetAllSOS/${user.grupId || user.firmaId}`,
+    canCreate: true
   },
   {
     key: "konferans",
     title: "Konferans",
     description: "Canlı konferans kayıtları ve katılımcılar.",
-    emptyState: "Konferans listesi ve katılımcı detayları grup seçimiyle bağlanacak."
+    emptyState: "Konferans kayıtlarını görüntülemek için Yenile düğmesini kullan.",
+    endpoint: (user) => `/Konferans/AnaRehber/GetAllKonferans/${user.grupId || user.firmaId}`,
+    canCreate: true
   },
   {
     key: "ekranDuzenleyici",
