@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { FiCheckSquare, FiLogOut, FiPlus, FiRefreshCw, FiSettings, FiSquare, FiX } from "react-icons/fi";
+import { FiCheckSquare, FiEdit2, FiLogOut, FiMapPin, FiPlus, FiRefreshCw, FiSettings, FiSquare, FiTrash2, FiX } from "react-icons/fi";
 import { adminModules, apiGet, defaultScreenEditor, type AdminModule, type AdminUser } from "@/lib/adminApi";
 
 type ScreenItem = {
@@ -27,6 +28,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createModule, setCreateModule] = useState<AdminModule | null>(null);
+  const [editRow, setEditRow] = useState<Record<string, unknown> | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -124,6 +126,10 @@ export default function AdminPage() {
     if (!createModule) return;
 
     formData.set("moduleKey", createModule.key);
+    if (editRow) {
+      const id = getRowId(editRow);
+      if (id) formData.set("Id", String(id));
+    }
     setCreating(true);
     setMessage("");
 
@@ -139,12 +145,45 @@ export default function AdminPage() {
 
       const savedModule = createModule;
       setCreateModule(null);
+      setEditRow(null);
       await loadModule(savedModule);
       setMessage(`${savedModule.title} kaydı oluşturuldu.`);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Kayıt oluşturulamadı.");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function deleteRecord(row: Record<string, unknown>) {
+    const id = getRowId(row);
+    if (!id) {
+      setMessage("Silinecek kayıt için geçerli ID bulunamadı.");
+      return;
+    }
+
+    if (!window.confirm("Bu kaydı silmek istediğinizden emin misiniz?")) return;
+
+    setLoading(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin-delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({ moduleKey: activeModule.key, id })
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      await loadModule(activeModule);
+      setMessage(`${activeModule.title} kaydı silindi.`);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Kayıt silinemedi.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -205,7 +244,10 @@ export default function AdminPage() {
                   {activeModule.canCreate ? (
                     <button
                       type="button"
-                      onClick={() => setCreateModule(activeModule)}
+                      onClick={() => {
+                        setEditRow(null);
+                        setCreateModule(activeModule);
+                      }}
                       className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#238071]/30 bg-white px-4 text-sm font-bold text-[#238071] hover:bg-[#eef8f5]"
                     >
                       <FiPlus aria-hidden="true" />
@@ -232,7 +274,15 @@ export default function AdminPage() {
                 <ScreenColumn title="Rehber Tarafı" items={screenEditor.rehber} onToggle={(key) => toggleScreen("rehber", key)} />
               </div>
             ) : preview ? (
-              <DataPreview data={preview} />
+              <DataPreview
+                data={preview}
+                module={activeModule}
+                onEdit={(row) => {
+                  setEditRow(row);
+                  setCreateModule(activeModule);
+                }}
+                onDelete={deleteRecord}
+              />
             ) : (
               <div className="grid min-h-[340px] place-items-center rounded-md border border-dashed border-black/15 bg-[#fafbf8] p-8 text-center">
                 <div>
@@ -244,7 +294,18 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-      {createModule ? <CreateModal module={createModule} creating={creating} onClose={() => setCreateModule(null)} onSubmit={createRecord} /> : null}
+      {createModule ? (
+        <CreateModal
+          module={createModule}
+          creating={creating}
+          initialRow={editRow}
+          onClose={() => {
+            setCreateModule(null);
+            setEditRow(null);
+          }}
+          onSubmit={createRecord}
+        />
+      ) : null}
     </section>
   );
 }
@@ -252,11 +313,13 @@ export default function AdminPage() {
 function CreateModal({
   module,
   creating,
+  initialRow,
   onClose,
   onSubmit
 }: {
   module: AdminModule;
   creating: boolean;
+  initialRow: Record<string, unknown> | null;
   onClose: () => void;
   onSubmit: (formData: FormData) => void | Promise<void>;
 }) {
@@ -271,7 +334,7 @@ function CreateModal({
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-[#202833]">{module.title} Ekle</h2>
+            <h2 className="text-xl font-bold text-[#202833]">{module.title} {initialRow ? "Düzenle" : "Ekle"}</h2>
             <p className="mt-1 text-sm font-medium text-[#64717f]">Alanlar mobil uygulamadaki backend kayıt yapısıyla uyumludur.</p>
           </div>
           <button
@@ -284,6 +347,7 @@ function CreateModal({
           </button>
         </div>
 
+        {initialRow ? <input type="hidden" name="Id" value={String(getRowId(initialRow) || "")} /> : null}
         {module.key === "personel" ? <PersonelForm /> : null}
         {module.key === "kafile" ? <KafileForm /> : null}
         {module.key === "otel" ? <OtelForm /> : null}
@@ -323,18 +387,16 @@ function PersonelForm() {
         label="Personel Türü"
         required
         options={[
-          { value: "1", label: "Kafile Başkanı" },
-          { value: "2", label: "Ana Rehber" },
-          { value: "3", label: "Rehber" },
-          { value: "4", label: "Personel" }
+          { value: "2", label: "Rehber" },
+          { value: "4", label: "Ana Rehber" }
         ]}
       />
+      <FormField name="AnaRehberSecimi" label="Bağlı Ana Rehber" />
       <FormField name="Oda" label="Oda" />
       <FormField name="Kat" label="Kat" />
       <FormField name="Latitude" label="Enlem" type="number" step="any" />
       <FormField name="Longitude" label="Boylam" type="number" step="any" />
-      <FormField name="ResimDosya" label="Resim" type="file" />
-      <FormField name="ProfilPhoto" label="Profil Fotoğrafı" type="file" />
+      <FormField name="ResimDosya" label="Fotoğraf" type="file" />
     </div>
   );
 }
@@ -507,11 +569,23 @@ function normalizeScreensLocal(data: ScreenEditorResponse) {
   return nextData;
 }
 
-function DataPreview({ data }: { data: unknown }) {
+function DataPreview({
+  data,
+  module,
+  onEdit,
+  onDelete
+}: {
+  data: unknown;
+  module: AdminModule;
+  onEdit: (row: Record<string, unknown>) => void;
+  onDelete: (row: Record<string, unknown>) => void;
+}) {
   const rows = Array.isArray(data) ? data : [data];
-  const objectRows = rows.filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === "object" && !Array.isArray(row));
+  const objectRows = rows
+    .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === "object" && !Array.isArray(row))
+    .map(normalizeTableRow);
   const relationMaps = buildRelationMaps(objectRows);
-  const columns = getDisplayColumns(objectRows).slice(0, 12);
+  const columns = getDisplayColumns(objectRows, module.key).slice(0, 9);
 
   if (!objectRows.length || !columns.length) {
     return (
@@ -527,6 +601,7 @@ function DataPreview({ data }: { data: unknown }) {
         <table className="min-w-full divide-y divide-black/10 text-left text-sm">
           <thead className="bg-[#f6f7f3] text-xs font-bold normal-case text-[#64717f]">
             <tr>
+              <th className="whitespace-nowrap px-3 py-3">İşlemler</th>
               {columns.map((column) => (
                 <th key={column} className="whitespace-nowrap px-3 py-3">
                   {formatColumnTitle(column)}
@@ -537,6 +612,26 @@ function DataPreview({ data }: { data: unknown }) {
           <tbody className="divide-y divide-black/10">
             {objectRows.slice(0, 50).map((row, index) => (
               <tr key={index} className="hover:bg-[#fafbf8]">
+                <td className="whitespace-nowrap px-3 py-3">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(row)}
+                      className="grid h-8 w-8 place-items-center rounded-md border border-black/10 text-[#238071] hover:bg-[#eef8f5]"
+                      aria-label="Düzenle"
+                    >
+                      <FiEdit2 aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(row)}
+                      className="grid h-8 w-8 place-items-center rounded-md border border-black/10 text-[#b42318] hover:bg-[#fff1f0]"
+                      aria-label="Sil"
+                    >
+                      <FiTrash2 aria-hidden="true" />
+                    </button>
+                  </div>
+                </td>
                 {columns.map((column) => (
                   <td key={column} className="max-w-[240px] truncate px-3 py-3 font-medium text-[#202833]">
                     {formatCell(row[column], column, row, relationMaps)}
@@ -554,18 +649,47 @@ function DataPreview({ data }: { data: unknown }) {
   );
 }
 
-const technicalColumns = new Set(["id", "createdAt", "updatedAt", "deletedAt", "password", "sifre", "token", "refreshToken"]);
-
-const preferredColumnOrder = [
-  "adSoyad",
+const technicalColumns = new Set([
+  "id",
   "ad",
-  "adi",
-  "isim",
-  "baslik",
-  "title",
+  "soyad",
   "firma",
+  "firmaId",
+  "firmaID",
   "firmaAdi",
   "firmaAd",
+  "createDate",
+  "createdDate",
+  "createdAt",
+  "createUser",
+  "createdUser",
+  "updateDate",
+  "updatedDate",
+  "updatedAt",
+  "updateUser",
+  "updatedUser",
+  "deletedAt",
+  "password",
+  "sifre",
+  "token",
+  "refreshToken",
+  "profilPhoto",
+  "ProfilPhoto",
+  "resim",
+  "Resim",
+  "resimUrl",
+  "ResimUrl",
+  "imageUrl",
+  "anaRehberFoto",
+  "rehberFoto"
+]);
+
+const preferredColumnOrder = [
+  "fotograf",
+  "adSoyad",
+  "telefon",
+  "baslik",
+  "title",
   "grup",
   "grupAdi",
   "kafile",
@@ -576,7 +700,6 @@ const preferredColumnOrder = [
   "personelAdi",
   "rehber",
   "anaRehber",
-  "telefon",
   "email",
   "eposta",
   "durum",
@@ -590,6 +713,10 @@ const preferredColumnOrder = [
 const columnTitles: Record<string, string> = {
   ad: "Ad",
   adi: "Ad",
+  fotograf: "Fotoğraf",
+  fotoğraf: "Fotoğraf",
+  tur: "Personel Türü",
+  Tur: "Personel Türü",
   mudurAd: "Müdür Adı",
   mudurAdi: "Müdür Adı",
   soyad: "Soyad",
@@ -622,6 +749,8 @@ const columnTitles: Record<string, string> = {
   rehberId: "Rehber",
   anaRehber: "Ana Rehber",
   anaRehberId: "Ana Rehber",
+  bagliAnaRehberId: "Bağlı Ana Rehber",
+  bagliAnaRehberAdSoyad: "Bağlı Ana Rehber",
   telefon: "Telefon",
   tel: "Telefon",
   resepsiyonTel: "Resepsiyon Telefonu",
@@ -668,6 +797,14 @@ const columnTitles: Record<string, string> = {
 };
 
 const enumLabels: Record<string, Record<number, string>> = {
+  tur: {
+    2: "Rehber",
+    4: "Ana Rehber"
+  },
+  Tur: {
+    2: "Rehber",
+    4: "Ana Rehber"
+  },
   kullaniciTipi: {
     1: "Hacı adayı",
     2: "Rehber",
@@ -682,7 +819,35 @@ const enumLabels: Record<string, Record<number, string>> = {
   }
 };
 
-function getDisplayColumns(rows: Record<string, unknown>[]) {
+function normalizeTableRow(row: Record<string, unknown>) {
+  const next = { ...row };
+  const firstName = getString(row.ad) || getString(row.Ad);
+  const lastName = getString(row.soyad) || getString(row.Soyad);
+  const fullName = `${firstName} ${lastName}`.trim();
+  if (fullName && !next.adSoyad) next.adSoyad = fullName;
+
+  const linkedGuideName = `${getString(row.bagliAnaRehberAd) || getString(row.BagliAnaRehberAd)} ${
+    getString(row.bagliAnaRehberSoyad) || getString(row.BagliAnaRehberSoyad)
+  }`.trim();
+  if (linkedGuideName) next.bagliAnaRehberAdSoyad = linkedGuideName;
+
+  const imageValue =
+    getString(row.fotograf) ||
+    getString(row.resim) ||
+    getString(row.Resim) ||
+    getString(row.resimUrl) ||
+    getString(row.ResimUrl) ||
+    getString(row.imageUrl) ||
+    getString(row.profilPhoto) ||
+    getString(row.ProfilPhoto) ||
+    getString(row.anaRehberFoto) ||
+    getString(row.rehberFoto);
+
+  if (imageValue) next.fotograf = imageValue;
+  return next;
+}
+
+function getDisplayColumns(rows: Record<string, unknown>[], moduleKey = "") {
   const allColumns = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
   const hiddenIdColumns = new Set<string>();
 
@@ -693,8 +858,18 @@ function getDisplayColumns(rows: Record<string, unknown>[]) {
   }
 
   return allColumns
-    .filter((column) => !technicalColumns.has(column) && !hiddenIdColumns.has(column))
+    .filter((column) => !technicalColumns.has(column) && !hiddenIdColumns.has(column) && !shouldHideColumn(column, moduleKey))
     .sort((a, b) => columnScore(a) - columnScore(b));
+}
+
+function shouldHideColumn(column: string, moduleKey: string) {
+  const normalized = column.toLocaleLowerCase("tr-TR");
+  if (normalized.includes("firma")) return true;
+  if (normalized.includes("created") || normalized.includes("create")) return true;
+  if (normalized.includes("updated") || normalized.includes("update")) return true;
+  if (normalized.includes("tarih") && !["turBaslangicTarihi", "turBitisTarihi", "tarih"].includes(column)) return true;
+  if (moduleKey === "personel" && ["bagliAnaRehberAd", "bagliAnaRehberSoyad"].includes(column)) return true;
+  return false;
 }
 
 function columnScore(column: string) {
@@ -746,6 +921,8 @@ function translateColumnWord(word: string) {
 
 function formatCell(value: unknown, column = "", row?: Record<string, unknown>, relationMaps?: RelationMaps) {
   if (value === null || value === undefined) return "";
+  if (column === "fotograf" && typeof value === "string") return <ImagePreview src={value} />;
+  if (isLocationColumn(column)) return <LocationLink value={value} row={row} />;
   if (typeof value === "boolean") return value ? "Evet" : "Hayır";
   if (typeof value === "number") {
     const enumValue = enumLabels[column]?.[value];
@@ -816,6 +993,81 @@ function getReadableObjectName(value: object) {
 
 function getString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : "";
+}
+
+function ImagePreview({ src }: { src: string }) {
+  const imageSrc = normalizeImageUrl(src);
+  if (!imageSrc) return "";
+
+  return (
+    <Image
+      src={imageSrc}
+      alt="Fotoğraf"
+      width={48}
+      height={48}
+      unoptimized
+      className="h-12 w-12 rounded-md border border-black/10 object-cover"
+      onError={(event) => {
+        event.currentTarget.style.display = "none";
+      }}
+    />
+  );
+}
+
+function normalizeImageUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "-") return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  const baseUrl = process.env.NEXT_PUBLIC_UMRE_API_BASE_URL?.replace(/\/api\/?$/, "").replace(/\/$/, "") || "http://37.148.210.227:7253";
+  return `${baseUrl}/${trimmed.replace(/^\/+/, "")}`;
+}
+
+function LocationLink({ value, row }: { value: unknown; row?: Record<string, unknown> }) {
+  const href = getMapsUrl(value, row);
+  if (!href) return "";
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="grid h-8 w-8 place-items-center rounded-md border border-[#238071]/30 text-[#238071] hover:bg-[#eef8f5]"
+      aria-label="Konumu aç"
+      title="Konumu aç"
+    >
+      <FiMapPin aria-hidden="true" />
+    </a>
+  );
+}
+
+function getMapsUrl(value: unknown, row?: Record<string, unknown>) {
+  const lat = getNumericField(row, ["latitude", "Latitude", "lat", "Lat", "enlem", "Enlem"]);
+  const lng = getNumericField(row, ["longitude", "Longitude", "lng", "Lng", "lon", "Lon", "boylam", "Boylam"]);
+  if (lat !== null && lng !== null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+  const text = typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
+  if (!text || text === "-") return "";
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(text)}`;
+}
+
+function getNumericField(row: Record<string, unknown> | undefined, keys: string[]) {
+  if (!row) return null;
+  for (const key of keys) {
+    const value = row[key];
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Number(value);
+  }
+  return null;
+}
+
+function isLocationColumn(column: string) {
+  const normalized = column.toLocaleLowerCase("tr-TR");
+  return ["konum", "adres", "location", "map", "harita"].some((keyword) => normalized.includes(keyword));
+}
+
+function getRowId(row: Record<string, unknown>) {
+  const value = row.id ?? row.Id ?? row.personelId ?? row.PersonelId ?? row.duyuruId ?? row.DuyuruId ?? row.konferansId ?? row.KonferansId;
+  return typeof value === "number" ? value : Number(value || 0);
 }
 
 function isIdColumn(column: string) {

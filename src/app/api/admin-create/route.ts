@@ -73,13 +73,13 @@ async function postForm(moduleKey: "personel" | "kafile" | "otel", user: AdminSe
   const backendForm = new FormData();
 
   if (moduleKey === "personel") {
-    appendValue(backendForm, "Id", "-1");
+    appendValue(backendForm, "Id", getFormValue(requestForm, "Id") || "-1");
     appendValue(backendForm, "PersonelId", user.id);
-    appendFields(backendForm, requestForm, ["Ad", "Soyad", "Tur", "Telefon", "Sifre", "Latitude", "Longitude", "Oda", "Kat", "ResimDosya", "ProfilPhoto"]);
+    appendFields(backendForm, requestForm, ["Ad", "Soyad", "Tur", "Telefon", "Sifre", "Latitude", "Longitude", "Oda", "Kat", "ResimDosya"]);
   }
 
   if (moduleKey === "kafile") {
-    appendValue(backendForm, "Id", "-1");
+    appendValue(backendForm, "Id", getFormValue(requestForm, "Id") || "-1");
     appendValue(backendForm, "CreateUserId", user.id);
     appendValue(backendForm, "AnaRehberId", user.id);
     appendFields(backendForm, requestForm, [
@@ -97,7 +97,7 @@ async function postForm(moduleKey: "personel" | "kafile" | "otel", user: AdminSe
   }
 
   if (moduleKey === "otel") {
-    appendValue(backendForm, "Id", "-1");
+    appendValue(backendForm, "Id", getFormValue(requestForm, "Id") || "-1");
     appendValue(backendForm, "PersonelId", user.id);
     appendFields(backendForm, requestForm, ["Ad", "MudurAd", "Telefon", "Konum", "ResepsiyonTel", "ResimDosya"]);
   }
@@ -133,4 +133,9 @@ function getRequiredString(form: FormData, name: string) {
   const value = String(form.get(name) || "").trim();
   if (!value) throw new Error(`${name} alanı zorunludur.`);
   return value;
+}
+
+function getFormValue(form: FormData, name: string) {
+  const value = form.get(name);
+  return typeof value === "string" ? value.trim() : "";
 }
