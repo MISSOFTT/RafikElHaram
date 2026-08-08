@@ -1010,6 +1010,7 @@ function getDisplayColumns(rows: Record<string, unknown>[], moduleKey = "") {
 
 function shouldHideColumn(column: string, moduleKey: string) {
   const normalized = column.toLocaleLowerCase("tr-TR");
+  if (moduleKey === "kafile" && normalized === "nereye") return true;
   if (normalized.includes("firma")) return true;
   if (normalized.includes("created") || normalized.includes("create")) return true;
   if (normalized.includes("updated") || normalized.includes("update")) return true;
