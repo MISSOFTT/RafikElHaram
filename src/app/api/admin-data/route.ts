@@ -19,7 +19,7 @@ const allowedEndpoints = {
   duyuru: (user: AdminSessionUser) => `/Duyuru/AnaRehber/Liste/${Number(user.id || 0)}`,
   sos: (user: AdminSessionUser) => `/Sos/Admin/GrupGecmisSos/${Number(user.grupId || 0)}`,
   konferans: (user: AdminSessionUser) => `/Konferans/Admin/GrupKonferanslar/${Number(user.grupId || 0)}`,
-  ekranDuzenleyici: () => "/MenuDegisiklik/Admin/EkranDuzenleyici"
+  ekranDuzenleyici: (user: AdminSessionUser) => `/MenuDegisiklik/Admin/EkranDuzenleyici?firmaId=${Number(user.firmaId || 0)}`
 } as const;
 
 type ModuleKey = keyof typeof allowedEndpoints;

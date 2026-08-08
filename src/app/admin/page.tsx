@@ -57,13 +57,13 @@ export default function AdminPage() {
     try {
       const data = await apiGet(module.key);
       if (module.key === "ekranDuzenleyici") {
-        setScreenEditor(normalizeScreenEditorResponse(data));
+        setScreenEditor(applySavedScreenEditor(normalizeScreenEditorResponse(data), user.firmaId));
       } else {
         setPreview(data);
       }
     } catch (err) {
       if (module.key === "ekranDuzenleyici") {
-        setScreenEditor(getDefaultScreenEditor());
+        setScreenEditor(applySavedScreenEditor(getDefaultScreenEditor(), user.firmaId));
       } else {
         setMessage(err instanceof Error ? err.message : "Veri alınamadı.");
       }
@@ -96,10 +96,12 @@ export default function AdminPage() {
         throw new Error(await apiResponse.text());
       }
 
-      setScreenEditor(normalizeScreenEditorResponse(await apiResponse.json()));
+      saveScreenEditorSelection(normalizedNextData, user?.firmaId ?? 0);
+      setScreenEditor(applySavedScreenEditor(normalizeScreenEditorResponse(await apiResponse.json()), user?.firmaId ?? 0));
       setMessage("Bağlı ekranlar birlikte güncellendi.");
     } catch {
       setScreenEditor(normalizedNextData);
+      saveScreenEditorSelection(normalizedNextData, user?.firmaId ?? 0);
       setMessage("Bağlı ekranlar birlikte güncellendi.");
     } finally {
       setLoading(false);
@@ -547,6 +549,41 @@ function normalizeScreenItem(item: unknown): ScreenItem {
   };
 }
 
+function screenStorageKey(firmaId: number) {
+  return `rafikAdminScreenEditor:${firmaId || "default"}`;
+}
+
+function saveScreenEditorSelection(data: ScreenEditorResponse, firmaId: number) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(
+    screenStorageKey(firmaId),
+    JSON.stringify({
+      haci: data.haci.map(({ key, secili }) => ({ key, secili })),
+      rehber: data.rehber.map(({ key, secili }) => ({ key, secili }))
+    })
+  );
+}
+
+function applySavedScreenEditor(data: ScreenEditorResponse, firmaId: number) {
+  if (typeof window === "undefined") return data;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(screenStorageKey(firmaId)) || "{}") as {
+      haci?: Array<{ key: string; secili: boolean }>;
+      rehber?: Array<{ key: string; secili: boolean }>;
+    };
+    const savedHaci = new Map((saved.haci || []).map((item) => [item.key, item.secili]));
+    const savedRehber = new Map((saved.rehber || []).map((item) => [item.key, item.secili]));
+
+    return normalizeScreensLocal({
+      haci: data.haci.map((item) => ({ ...item, secili: savedHaci.get(item.key) ?? item.secili })),
+      rehber: data.rehber.map((item) => ({ ...item, secili: savedRehber.get(item.key) ?? item.secili }))
+    });
+  } catch {
+    return data;
+  }
+}
+
 function cloneScreenEditor(data: ScreenEditorResponse) {
   return {
     haci: data.haci.map((item) => ({ ...item, bagliEkranlar: [...item.bagliEkranlar] })),
@@ -655,7 +692,7 @@ function DataPreview({
         </table>
       </div>
       <div className="border-t border-black/10 bg-white px-3 py-2 text-xs font-semibold text-[#64717f]">
-        {objectRows.length} kayıt gösteriliyor. Tablo ilk 50 kaydı ve ilk 12 anlamlı kolonu listeler.
+        {objectRows.length} kayıt gösteriliyor. Tablo ilk 50 kaydı listeler.
       </div>
     </div>
   );
@@ -670,6 +707,12 @@ const technicalColumns = new Set([
   "firmaID",
   "firmaAdi",
   "firmaAd",
+  "grup",
+  "Grup",
+  "personel",
+  "Personel",
+  "personelId",
+  "PersonelId",
   "createDate",
   "createdDate",
   "createdAt",
@@ -700,6 +743,9 @@ const preferredColumnOrder = [
   "fotograf",
   "adSoyad",
   "telefon",
+  "personelTipi",
+  "kullaniciTip",
+  "tur",
   "baslik",
   "title",
   "grup",
@@ -729,6 +775,17 @@ const columnTitles: Record<string, string> = {
   fotoğraf: "Fotoğraf",
   tur: "Personel Türü",
   Tur: "Personel Türü",
+  personelTipi: "Personel Tipi",
+  PersonelTipi: "Personel Tipi",
+  "Personel Tipi": "Personel Tipi",
+  kullaniciTip: "Kullanıcı Tipi",
+  KullaniciTip: "Kullanıcı Tipi",
+  sureSaniye: "Süre (sn)",
+  SureSaniye: "Süre (sn)",
+  "Sure Saniye": "Süre (sn)",
+  "Süre Saniye": "Süre (sn)",
+  sure: "Süre",
+  Sure: "Süre",
   mudurAd: "Müdür Adı",
   mudurAdi: "Müdür Adı",
   soyad: "Soyad",
@@ -817,10 +874,34 @@ const enumLabels: Record<string, Record<number, string>> = {
     2: "Rehber",
     4: "Ana Rehber"
   },
+  personelTipi: {
+    2: "Rehber",
+    4: "Ana Rehber"
+  },
+  PersonelTipi: {
+    2: "Rehber",
+    4: "Ana Rehber"
+  },
+  "Personel Tipi": {
+    2: "Rehber",
+    4: "Ana Rehber"
+  },
+  kullaniciTip: {
+    1: "Hacı adayı",
+    2: "Rehber",
+    4: "Ana Rehber",
+    99: "Admin"
+  },
+  KullaniciTip: {
+    1: "Hacı adayı",
+    2: "Rehber",
+    4: "Ana Rehber",
+    99: "Admin"
+  },
   kullaniciTipi: {
     1: "Hacı adayı",
     2: "Rehber",
-    3: "Ana rehber",
+    4: "Ana Rehber",
     99: "Admin"
   },
   durum: {
