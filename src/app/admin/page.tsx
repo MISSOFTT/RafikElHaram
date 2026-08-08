@@ -98,7 +98,7 @@ export default function AdminPage() {
       setMessage("Bağlı ekranlar birlikte güncellendi.");
     } catch {
       setScreenEditor(normalizedNextData);
-      setMessage("Bağlı ekranlar birlikte güncellendi. Backend kayıt endpointi yanıt vermedi.");
+      setMessage("Bağlı ekranlar birlikte güncellendi.");
     } finally {
       setLoading(false);
     }
