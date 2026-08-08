@@ -42,6 +42,11 @@ export async function POST(request: NextRequest) {
     });
 
     const text = await response.text();
+    if (body.moduleKey === "kafile" && response.ok) {
+      const enriched = await enrichKafileWithHotelNames(text, user);
+      if (enriched) return NextResponse.json(enriched);
+    }
+
     return new NextResponse(text, {
       status: response.status,
       headers: { "Content-Type": response.headers.get("content-type") || "application/json" }
@@ -49,4 +54,66 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ message: "Veriler alınamadı. Lütfen daha sonra tekrar deneyin." }, { status: 502 });
   }
+}
+
+async function enrichKafileWithHotelNames(text: string, user: AdminSessionUser) {
+  try {
+    const data = JSON.parse(text);
+    const rows = getRows(data);
+    if (!rows.length) return data;
+
+    const hotelResponse = await fetch(`${backendBaseUrl}${allowedEndpoints.otel(user)}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store"
+    });
+
+    if (!hotelResponse.ok) return data;
+
+    const hotelData = await hotelResponse.json();
+    const hotelRows = getRows(hotelData);
+    const hotelNames = new Map<number, string>();
+
+    for (const hotel of hotelRows) {
+      const id = getNumber(hotel.id ?? hotel.Id ?? hotel.otelId ?? hotel.OtelId);
+      const name = getString(hotel.ad ?? hotel.Ad ?? hotel.adi ?? hotel.Adi ?? hotel.otelAdi ?? hotel.OtelAdi);
+      if (id !== null && name) hotelNames.set(id, name);
+    }
+
+    for (const row of rows) {
+      const hotelId = getNumber(row.otelId ?? row.OtelId ?? row.otelID ?? row.OtelID);
+      if (hotelId !== null && hotelNames.has(hotelId)) {
+        row.otelAdi = hotelNames.get(hotelId);
+        row.OtelAdi = hotelNames.get(hotelId);
+      }
+    }
+
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function getRows(data: unknown): Record<string, unknown>[] {
+  if (Array.isArray(data)) return data.filter(isRecord);
+  if (!isRecord(data)) return [];
+
+  for (const value of Object.values(data)) {
+    if (Array.isArray(value)) return value.filter(isRecord);
+  }
+
+  return [];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Number(value);
+  return null;
+}
+
+function getString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : "";
 }
